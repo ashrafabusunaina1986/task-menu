@@ -1,0 +1,28 @@
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# Next.js
+.next/
+out/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+create_init.py
+create_init2.py

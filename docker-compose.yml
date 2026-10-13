@@ -1,0 +1,89 @@
+services:
+  frontend:
+    restart: unless-stopped
+    container_name: frontend-app
+    env_file:
+      - .env
+    build:
+      context: ./frontend
+      args:
+        API_URL_SERVER: ${API_URL_SERVER}
+        NEXT_PUBLIC_RECAPTCHA_SITE_KEY: ${NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+    # environment:
+    #     NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    ports:
+      - "3000:3000"
+    command: npm run start
+    volumes:
+      - /app/node_modules
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:3000" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - task_menu_network
+
+  backend:
+    restart: unless-stopped
+    container_name: backend-app
+    env_file:
+      - .env
+    build:
+      context: ./backend
+    ports:
+      - "8000"
+    networks:
+      - task_menu_network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    volumes:
+        - /home/docker-data/images-data:/app/images-data
+
+  mongodb:
+    restart: unless-stopped
+    image: mongo:8.0
+    container_name: mongodb-app
+    volumes:
+      - /home/docker-data/mongo-data:/data/db
+      - ./mongo/mongo-entrypoint.sh:/docker-entrypoint-initdb.d/mongo-entrypoint.sh:ro
+
+    entrypoint: [ "/bin/bash", "/docker-entrypoint-initdb.d/mongo-entrypoint.sh" ]
+
+    ports:
+      - "27018:27017"
+    env_file:
+      - .env
+    networks:
+      - task_menu_network
+    healthcheck:
+      test: >
+        mongosh -u root -p R1ootSt2rongP3assword --authenticationDatabase admin --eval "rs.status().ok"
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared-app
+
+    env_file:
+      - .env
+
+    restart: unless-stopped
+
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARED_TOKEN}
+
+    depends_on:
+      frontend:
+        condition: service_healthy
+
+    networks:
+      - task_menu_network
+
+networks:
+  task_menu_network:
+    driver: bridge

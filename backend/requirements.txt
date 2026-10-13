@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+pymongo
+python-dotenv
+requests
+motor
+pydantic[email]
+passlib[argon2]
+argon2-cffi
+python-jose[cryptography]
+google-auth
+httpx
+resend
+jinja2

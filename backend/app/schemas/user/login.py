@@ -1,0 +1,16 @@
+# app/schemas/user/login.py
+
+# app/schemas/user/login.py
+
+from pydantic import BaseModel, EmailStr, Field
+
+
+class UserLogin(BaseModel):
+
+    email: EmailStr
+
+    password: str = Field(
+        min_length=8
+    )
+
+    
