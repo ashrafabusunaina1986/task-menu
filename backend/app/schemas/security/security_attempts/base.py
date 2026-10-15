@@ -52,5 +52,6 @@ class SecurityAttemptsBase(BaseModel):
     ip_id: Optional[str] = None
     device_id: Optional[str] = None
     session_id: Optional[str] = None
+    register_id:Optional[str]=None
     max_attempts: SecurityMaxAttempts
     type_operation: SecurityOperation

@@ -15,7 +15,7 @@ from app.core.database import (
 
 
 class SecurityAttemptsRepositoryCreate:
-    
+
     @property
     def collection(self):
         return get_security_attempts_collection()
@@ -42,7 +42,6 @@ class SecurityAttemptsRepositoryCreate:
         security_attempts_data["_id"] = str(
             result.inserted_id
         )
-
         return SecurityAttemptsModel.model_validate(
             security_attempts_data
         )

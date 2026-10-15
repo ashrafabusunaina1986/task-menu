@@ -35,3 +35,11 @@ class PendingRegisterRepository(PendingRegisterRepositoryBase):
 
     async def delete_expired_register(self) -> bool:
         return self.repository_delete.delete_expired_register()
+
+    async def delete_pending_register_id(
+        self,
+        register_id: str
+    ) -> bool:
+        return self.delete_pending_register_id(
+            register_id=register_id
+        )

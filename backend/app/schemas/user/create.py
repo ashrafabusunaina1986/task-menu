@@ -8,4 +8,7 @@ class UserCreate(UserBase):
         min_length=8,
         max_length=128
     )
-    
+
+
+class RegisterUser(UserBase):
+    hashed_password: str = Field(min_length=1)

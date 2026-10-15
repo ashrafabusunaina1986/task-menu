@@ -46,3 +46,11 @@ class PendingRegisterService(PendingRegisterServicesBase):
         self,
     ) -> bool:
         return await self.service_delete.delete_expired_register()
+
+    async def delete_pending_register_id(
+        self,
+        register_id: str
+    ) -> bool:
+        return self.service_delete.delete_pending_register_id(
+            register_id=register_id
+        )

@@ -34,3 +34,10 @@ class PendingRegisterRepositoryBase(ABC):
         self,
     ) -> bool:
         pass
+
+    @abstractmethod
+    async def delete_pending_register_id(
+        self,
+        register_id:str
+    ) -> bool:
+        pass

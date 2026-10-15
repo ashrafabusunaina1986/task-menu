@@ -4,3 +4,4 @@ type AuthError = {
     success: boolean;
     message: string | { reason: string }
 }
+

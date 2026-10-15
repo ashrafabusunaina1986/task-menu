@@ -34,6 +34,9 @@ class SecurityAttemptsRepositoryDeactivate:
         if data.user_id is not None:
             query["user_id"] = data.user_id
 
+        if data.register_id is not None:
+            query["register_id"] = data.register_id
+
         result = await self.collection.update_one(
             query,
             {

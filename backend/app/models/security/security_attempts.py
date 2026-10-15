@@ -20,6 +20,7 @@ class SecurityAttemptsModel(BaseModel):
     ip_id: Optional[str] = None
     device_id: Optional[str] = None
     session_id: Optional[str] = None
+    register_id: Optional[str] = None
 
     type_operation: SecurityOperation  # لاحقا enum
 

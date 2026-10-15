@@ -318,6 +318,7 @@ class LoginService:
                     data=SecurityAttemptsDeactivate(
                         ip_id=ip_id,
                         device_id=device_id,
+                        user_id=user.id,
                         type_operation=SecurityOperation.LOGIN_OTP
                     )
                 )

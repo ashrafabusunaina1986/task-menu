@@ -92,7 +92,7 @@ class SecurityAttemptsService:
         data: SecurityAttemptsRead,
         max_attempts: int
     ) -> SecurityAttemptsModel:
-
+        print(data)
         security_attempts = await self.get_current_by_context(
             data=data
         )
@@ -105,7 +105,8 @@ class SecurityAttemptsService:
                     ip_id=data.ip_id,
                     device_id=data.device_id,
                     session_id=data.session_id,
-                    type_operation=data.type_operation
+                    type_operation=data.type_operation,
+                    register_id=data.register_id
                 )
             )
 

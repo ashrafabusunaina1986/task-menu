@@ -16,6 +16,7 @@ import AccessDenied from "../blocks/AccessDenied"
 import { getEmail } from "@/lib/email/email"
 import { jwtDecode } from "jwt-decode"
 import RegisterExpired from "../register/RegisterExpired"
+import { ApiError, UserBlockError, verify_register } from "@/lib/user/user"
 
 
 export default function VerifyOTP() {
@@ -188,14 +189,13 @@ export default function VerifyOTP() {
         // -------------------------------------------
         // EMAIL
         // -------------------------------------------
-
-        if (!user_id) {
+        const id = user_id || register_token
+        if (!id) {
 
             setError("Email is missing")
 
             return
         }
-
 
         // -------------------------------------------
         // OTP
@@ -219,67 +219,95 @@ export default function VerifyOTP() {
             // =======================================
             // AUTH.JS LOGIN
             // =======================================
+            if (user_id) {
+                const result = await signIn(
+                    "credentials",
+                    {
+                        user_id: user_id,
+                        otp,
+                        redirect: false,
+                    }
+                )
+                // =======================================
+                // AUTH.JS ERROR
+                // =======================================
 
-            const result = await signIn(
-                "credentials",
-                {
-                    user_id: user_id,
-                    otp,
-                    redirect: false,
-                }
-            )
-            // =======================================
-            // AUTH.JS ERROR
-            // =======================================
-
-            if (!result || result.error) {
-                const blockResult = await block_status("user", user_id)
+                if (!result || result.error) {
+                    const blockResult = await block_status("user", user_id)
 
 
-                if (blockResult.data.blocked) {
+                    if (blockResult.data.blocked) {
 
-                    setAccessDenied({
-                        message:
-                            blockResult.data.reason ??
-                            "Access denied",
+                        setAccessDenied({
+                            message:
+                                blockResult.data.reason ??
+                                "Access denied",
 
-                        blockedUntil:
-                            blockResult.data.blocked_until
-                    })
+                            blockedUntil:
+                                blockResult.data.blocked_until
+                        })
+
+                        return
+                    }
+
+                    setError(
+                        "Invalid verification code"
+                    )
 
                     return
                 }
 
-                setError(
-                    "Invalid verification code"
-                )
+                // =======================================
+                // SUCCESS
+                // =======================================
 
-                return
+                setSuccess(true)
+
+                router.push("/")
+
+                router.refresh()
+            }
+            if (register_token) {
+                const result = await verify_register({
+                    register_token,
+                    otp
+                })
+
+                // =======================================
+                // SUCCESS
+                // =======================================
+
+                setSuccess(true)
+
+                router.push("/login")
+
+                router.refresh()
             }
 
 
-            // =======================================
-            // SUCCESS
-            // =======================================
-
-            setSuccess(true)
-
-            router.push("/")
-
-            router.refresh()
-
         } catch (error) {
 
-            console.error(
-                "OTP verification error:",
-                error
-            )
+            if (error instanceof ApiError) {
+                const detail = error.data;
 
-            setError(
-                error instanceof Error
-                    ? error.message
-                    : "Verification failed"
-            )
+                if (
+                    detail !== null &&
+                    typeof detail === "object" &&
+                    "blocked" in detail &&
+                    detail.blocked === true
+                ) {
+                    const block = detail as UserBlockError;
+
+                    setAccessDenied({
+                        message: block.reason,
+                        blockedUntil: block.blocked_until,
+                    });
+                } else {
+                    setError(error.message);
+                }
+            } else {
+                setError("An unexpected error occurred.");
+            }
 
         } finally {
 

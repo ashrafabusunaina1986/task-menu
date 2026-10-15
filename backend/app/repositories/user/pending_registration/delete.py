@@ -1,5 +1,5 @@
 # app/repositories/user/pending_registration/delete.py
-
+from bson import ObjectId
 from datetime import datetime, timezone
 from app.core.database import get_pending_register_collection
 
@@ -20,3 +20,16 @@ class PendingRegisterRepositoryDelete:
         )
 
         return result.deleted_count > 0
+
+    async def delete_pending_register_id(
+        self,
+        register_id: str
+    ) -> bool:
+
+        return (
+            await get_pending_register_collection().delete_one(
+                {
+                    "_id": ObjectId(register_id)
+                }
+            )
+        ).deleted_count > 0

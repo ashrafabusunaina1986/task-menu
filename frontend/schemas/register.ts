@@ -3,9 +3,9 @@
 import { z } from 'zod'
 
 export const registerSchema = z.object({
-    name: z.string().refine((value) => value.trim().split(/\s+/).length >= 2,
+    name: z.string().refine((value) => value.trim().split(/\s+/).length >= 1,
         {
-            message: "Name must contain at least two words."
+            message: "Name must contain at least one words."
         }),
     email: z.email(),
     password: z.string().min(8, {

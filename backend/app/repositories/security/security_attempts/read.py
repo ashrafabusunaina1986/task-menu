@@ -34,6 +34,9 @@ class SecurityAttemptsRepositoryRead:
         if data.user_id:
             query["user_id"] = data.user_id
 
+        if data.register_id:
+            query["register_id"] = data.register_id
+
         if data.ip_id:
             query["ip_id"] = data.ip_id
 
@@ -68,6 +71,10 @@ class SecurityAttemptsRepositoryRead:
 
         if data.session_id:
             query["session_id"] = data.session_id
+        if data.register_id:
+            query["register_id"] = data.register_id
+        if data.user_id:
+            query["user_id"] = data.user_id
 
         security_attempts = await self.collection.find_one(
             query

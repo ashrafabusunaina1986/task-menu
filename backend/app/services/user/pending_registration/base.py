@@ -21,3 +21,9 @@ class PendingRegisterServicesBase(ABC):
     @abstractmethod
     async def delete_expired_register(self) -> bool:
         ...
+
+    async def delete_pending_register_id(
+        self,
+        register_id: str
+    ) -> bool:
+        ...

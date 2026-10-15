@@ -8,5 +8,6 @@ class SecurityAttemptsDeactivate(BaseModel):
     session_id: Optional[str] = None
     ip_id: str
     device_id: str
-    user_id: Optional[str] = None
+    user_id: Optional[str] = None,
+    register_id: Optional[str] = None
     type_operation: str

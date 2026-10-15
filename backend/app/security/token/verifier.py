@@ -37,8 +37,8 @@ class TokenVerifier:
                 detail="Invalid token type"
             )
 
-        user_id = payload.get("sub")
-        if not user_id:
+        subject = payload.get("sub")
+        if not subject:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token missing user identity"

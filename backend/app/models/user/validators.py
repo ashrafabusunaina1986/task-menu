@@ -14,7 +14,7 @@ class UserValidators:
 
         words = [word for word in value.split() if word]
 
-        if len(words) < 2:
+        if len(words) < 1:
             raise ValueError(
                 "Name must contain at least two words."
             )
