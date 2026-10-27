@@ -1,5 +1,5 @@
 // app/tasks/[id]/page.tsx
-
+// 
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
@@ -12,181 +12,161 @@ interface TaskPageProps {
         id: string;
     }>;
     searchParams: Promise<{
-        project_id?: string
-    }>
+        project_id?: string;
+    }>;
 }
 
 export default async function TaskPage({
-    params, searchParams
+    params,
+    searchParams
 }: TaskPageProps) {
 
     const { id } = await params;
-    const { project_id } = await searchParams
+    const { project_id } = await searchParams;
 
     if (!project_id) {
-        return redirect("/project")
+        return redirect("/project");
     }
 
     let task: Task;
 
     try {
         task = await getTask(id, project_id);
-        console.log(task)
+        if (!task) {
+            notFound();
+        }
     } catch (error) {
         console.error(error);
         notFound();
     }
 
-    return (
-        <main className="min-h-screen bg-black relative overflow-hidden py-10">
+    const targetTaskId = task._id || "";
 
-            {/* Background Glow */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-[900px] h-[900px] rounded-full bg-violet-700/15 blur-[220px]" />
+    // دالة تحديد سمات شارات ألوان الحالات للمهام داخل السيرفر
+    const getStatusBadgeStyles = (status: string) => {
+        switch (status?.toLowerCase()) {
+            case "todo": return "bg-blue-500/10 text-blue-400 border-blue-500/20";
+            case "in_progress": return "bg-amber-500/10 text-amber-400 border-amber-500/20";
+            case "done": return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+            default: return "bg-zinc-800 text-zinc-400 border-zinc-700";
+        }
+    };
+
+    // دالة تحديد سمات شارات ألوان مستويات الأولوية داخل السيرفر
+    const getPriorityBadgeStyles = (priority: string) => {
+        switch (priority?.toLowerCase()) {
+            case "high": return "bg-rose-500/10 text-rose-400 border-rose-500/20";
+            case "medium": return "bg-purple-500/10 text-purple-400 border-purple-500/20";
+            case "low": return "bg-gray-500/10 text-gray-400 border-gray-700/60";
+            default: return "bg-zinc-800 text-zinc-400 border-zinc-700";
+        }
+    };
+    return (
+        <main className="relative min-h-screen overflow-hidden bg-[#08080d] py-10 px-4 sm:px-6">
+            {/* Premium Ambient Background Glow Layer */}
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <div className="h-[1000px] w-[1000px] rounded-full bg-purple-600/5 blur-[240px]" />
+                <div className="absolute h-[500px] w-[500px] rounded-full bg-blue-500/5 blur-[180px]" />
             </div>
 
-            <div
-                className="
-                    relative
-                    max-w-4xl
-                    mx-auto
-                    rounded-3xl
-                    border border-white/10
-                    bg-zinc-950/90
-                    backdrop-blur-xl
-                    shadow-[0_25px_80px_rgba(0,0,0,.8)]
-                    p-10
-                "
-            >
-                <h1
-                    className="
-                        text-5xl
-                        font-extrabold
-                        mb-10
-                        bg-gradient-to-r
-                        from-blue-500
-                        to-violet-500
-                        bg-clip-text
-                        text-transparent
-                    "
-                >
-                    Task Details
-                </h1>
+            <div className="relative mx-auto max-w-4xl rounded-[32px] border border-white/5 bg-[#0d0d16]/90 p-6 md:p-10 shadow-[0_30px_90px_rgba(0,0,0,.85)] backdrop-blur-xl space-y-8 animate-fadeIn">
+                
+                {/* Translucent Navigation Breadcrumb Top Ribbon */}
+                <div className="flex justify-between items-center border-b border-gray-900 pb-5">
+                    <Link 
+                        href={`/tasks?project_id=${encodeURIComponent(project_id)}`} 
+                        className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-purple-400 uppercase tracking-wider transition"
+                    >
+                        <span>←</span> Back to Tasks Pipeline
+                    </Link>
+                    <div className="text-[10px] font-mono text-gray-600 bg-[#121222] px-2 py-0.5 rounded border border-gray-800/80">
+                        REF_ID: {targetTaskId.slice(0, 8)}...
+                    </div>
+                </div>
 
-                <div className="space-y-8">
+                {/* Section Header Metadata Layout */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-900/60 pb-6">
+                    <div>
+                        <h1 className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-3xl font-extrabold text-transparent sm:text-4xl tracking-tight">
+                            Task Instance Details
+                        </h1>
+                        <p className="text-xs text-gray-500 mt-1">Review atomic context metrics, task progression scopes, and lifecycle log data.</p>
+                    </div>
 
-                    <div className="border-b border-white/10 pb-4">
-                        <h2 className="text-sm uppercase tracking-wider text-gray-400">
-                            Title
+                    {/* Integrated Micro-Metrics Bar Badges */}
+                    <div className="flex items-center gap-3 bg-[#11111a] p-2 rounded-xl border border-gray-800/40">
+                        <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-md border uppercase ${getStatusBadgeStyles(task.status)}`}>
+                            {task.status || "Todo"}
+                        </span>
+                        <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-md border uppercase ${getPriorityBadgeStyles(task.priority)}`}>
+                            {task.priority || "Medium"}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Structural Content Fields Dashboard */}
+                <div className="space-y-6 pt-2">
+                    {/* Task Title Block */}
+                    <div className="p-5 rounded-2xl bg-[#141423]/40 border border-gray-800/60 space-y-1">
+                        <h2 className="text-[10px] font-extrabold uppercase tracking-widest text-gray-500">
+                            Task Content Title
                         </h2>
-
-                        <p className="mt-2 text-2xl font-semibold text-white">
+                        <p className="text-lg font-extrabold text-white tracking-tight pt-1">
                             {task.title}
                         </p>
                     </div>
 
-                    <div className="border-b border-white/10 pb-4">
-                        <h2 className="text-sm uppercase tracking-wider text-gray-400">
-                            Description
+                    {/* Task Description Context Block */}
+                    <div className="p-5 rounded-2xl bg-[#141423]/40 border border-gray-800/60 space-y-1">
+                        <h2 className="text-[10px] font-extrabold uppercase tracking-widest text-gray-500">
+                            Contextual Description Parameters
                         </h2>
-
-                        <p className="mt-2 text-gray-300 leading-7">
-                            {task.description || "No description"}
+                        <p className="text-sm leading-6 text-gray-300 pt-1 break-words whitespace-pre-line">
+                            {task.description || "No specific detailed description metadata compiled for this action item."}
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-6">
-
-                        <div className="rounded-xl bg-zinc-900 border border-white/10 p-5">
-                            <h2 className="text-sm text-gray-400 mb-2">
-                                Status
-                            </h2>
-
-                            <span className="inline-block rounded-full bg-blue-600/20 border border-blue-500/30 px-4 py-2 text-blue-300 font-medium">
-                                {task.status}
-                            </span>
+                    {/* Operational Lifecycle Database Logs Timestamps */}
+                    <div className="grid gap-4 sm:grid-cols-2 border-t border-gray-900 pt-6">
+                        <div className="rounded-xl border border-gray-800/40 bg-[#141423]/20 p-4 flex items-center justify-between">
+                            <div>
+                                <h2 className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Instance Dispatched</h2>
+                                <p className="mt-1 text-xs text-gray-300 font-medium">
+                                    <LocalDate date={task.created_at} />
+                                </p>
+                            </div>
+                            <span className="text-base opacity-40">📥</span>
                         </div>
 
-                        <div className="rounded-xl bg-zinc-900 border border-white/10 p-5">
-                            <h2 className="text-sm text-gray-400 mb-2">
-                                Priority
-                            </h2>
-
-                            <span className="inline-block rounded-full bg-violet-600/20 border border-violet-500/30 px-4 py-2 text-violet-300 font-medium">
-                                {task.priority}
-                            </span>
+                        <div className="rounded-xl border border-gray-800/40 bg-[#141423]/20 p-4 flex items-center justify-between">
+                            <div>
+                                <h2 className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Last Core Mutation</h2>
+                                <p className="mt-1 text-xs text-purple-400 font-medium">
+                                    <LocalDate date={task.updated_at} />
+                                </p>
+                            </div>
+                            <span className="text-base opacity-40">🔄</span>
                         </div>
-
                     </div>
-
-                    <div className="grid md:grid-cols-2 gap-6">
-
-                        <div className="rounded-xl bg-zinc-900 border border-white/10 p-5">
-                            <h2 className="text-sm text-gray-400">
-                                Created At
-                            </h2>
-
-                            <p className="mt-2 text-white">
-                                <LocalDate date={task.created_at} />
-                            </p>
-                        </div>
-
-                        <div className="rounded-xl bg-zinc-900 border border-white/10 p-5">
-                            <h2 className="text-sm text-gray-400">
-                                Updated At
-                            </h2>
-
-                            <p className="mt-2 text-white">
-                                <LocalDate date={task.updated_at} />
-                            </p>
-                        </div>
-
-                    </div>
-
                 </div>
 
-                <div className="mt-10 flex flex-wrap gap-4">
-
-                    <Link
-                        href={`/tasks/edit/${task._id}?project_id=${encodeURIComponent(project_id)}`}
-                        className="
-                            px-6
-                            py-3
-                            rounded-xl
-                            font-semibold
-                            text-white
-                            bg-gradient-to-r
-                            from-blue-600
-                            to-violet-600
-                            shadow-[0_0_25px_rgba(99,102,241,.5)]
-                            hover:scale-105
-                            transition
-                        "
-                    >
-                        Edit Task
-                    </Link>
-
+                {/* Global Administrative Control Panel Buttons */}
+                <div className="mt-8 pt-5 border-t border-gray-900 flex flex-col sm:flex-row sm:justify-between gap-4 items-center">
                     <Link
                         href={`/project/${encodeURIComponent(project_id)}`}
-                        className="
-                            px-6
-                            py-3
-                            rounded-xl
-                            border
-                            border-white/10
-                            bg-zinc-900
-                            text-gray-200
-                            hover:bg-zinc-800
-                            transition
-                        "
+                        className="w-full sm:w-auto text-center rounded-xl border border-gray-800 bg-[#141423]/40 px-6 py-2.5 text-xs font-bold text-gray-400 transition hover:bg-gray-800 hover:text-white"
                     >
-                        Back to project
+                        Return to Cluster Mappings
                     </Link>
 
+                    <Link
+                        href={`/tasks/edit/${targetTaskId}?project_id=${encodeURIComponent(project_id)}`}
+                        className="w-full sm:w-auto text-center rounded-xl bg-purple-600 px-6 py-2.5 text-xs font-bold text-white shadow-lg shadow-purple-600/20 transition hover:bg-purple-700 active:scale-[0.98]"
+                    >
+                        Modify Task Parameters
+                    </Link>
                 </div>
-
             </div>
-
         </main>
     );
 }

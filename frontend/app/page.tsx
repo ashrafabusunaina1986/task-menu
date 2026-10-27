@@ -6,35 +6,37 @@ import {
     FiShield,
     FiLayers,
     FiCheckSquare,
-    FiUsers,
     FiTarget,
     FiActivity,
+    FiLayout,
+    FiCpu,
+    FiArrowUpRight
 } from "react-icons/fi";
 
 const features = [
     {
         icon: FiLayers,
-        title: "Project Management",
-        description:
-            "Organize projects, manage priorities, and keep your work structured in one place.",
+        title: "Project Clusters",
+        description: "Organize projects, manage strict priorities, and maintain isolated pipeline containers.",
         color: "text-blue-400",
         glow: "bg-blue-500/10",
+        border: "border-blue-500/20"
     },
     {
         icon: FiCheckSquare,
-        title: "Task Management",
-        description:
-            "Track tasks from planning to completion and maintain a clear view of your progress.",
-        color: "text-violet-400",
-        glow: "bg-violet-500/10",
+        title: "Atomic Tasks",
+        description: "Track system micro-tasks from initial deployment down to successful state burn-off.",
+        color: "text-purple-400",
+        glow: "bg-purple-500/10",
+        border: "border-purple-500/20"
     },
     {
         icon: FiShield,
-        title: "Security First",
-        description:
-            "Built with authentication, authorization, and access control as core principles.",
+        title: "Zero-Trust Security",
+        description: "Built with enterprise-grade token encryption, access block tracking, and OTP gates.",
         color: "text-emerald-400",
         glow: "bg-emerald-500/10",
+        border: "border-emerald-500/20"
     },
 ];
 
@@ -46,364 +48,158 @@ export default async function HomePage() {
     const workspaceHref = isAuthenticated ? "/project" : "/login";
 
     return (
-        <main className="relative min-h-screen overflow-hidden bg-black text-white">
-            {/* Background effects */}
-            <div className="pointer-events-none absolute inset-0 overflow-hidden">
-                <div className="absolute -left-48 top-40 h-[500px] w-[500px] rounded-full bg-blue-600/10 blur-[160px]" />
-                <div className="absolute right-[-100px] top-20 h-[600px] w-[600px] rounded-full bg-violet-600/15 blur-[180px]" />
-                <div className="absolute bottom-0 left-1/3 h-[350px] w-[350px] rounded-full bg-indigo-600/10 blur-[150px]" />
+        <main className="relative min-h-screen overflow-hidden bg-[#08080d] text-white selection:bg-purple-500/30 selection:text-purple-200">
+            {/* Ambient Background Matrix Grid & Cyberpunk Glowing Radial Overlays */}
+            <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
+                <div className="absolute -left-48 top-40 h-[600px] w-[600px] rounded-full bg-blue-600/[0.03] blur-[160px]" />
+                <div className="absolute right-[-100px] top-20 h-[700px] w-[700px] rounded-full bg-purple-600/[0.05] blur-[180px]" />
+                <div className="absolute bottom-0 left-1/3 h-[450px] w-[450px] rounded-full bg-indigo-600/[0.03] blur-[150px]" />
 
+                {/* Sub-grid infrastructure pattern lines */}
                 <div
-                    className="absolute inset-0 opacity-[0.035]"
+                    className="absolute inset-0 opacity-[0.015]"
                     style={{
                         backgroundImage:
-                            "linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)",
-                        backgroundSize: "60px 60px",
+                            "linear-gradient(rgba(255,255,255,.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.3) 1px, transparent 1px)",
+                        backgroundSize: "40px 40px",
                     }}
                 />
             </div>
 
-            <div className="relative z-20">
+            {/* Navigation Header Gate */}
+            <div className="relative z-50">
                 <TopNavigation
                     isAuthenticated={isAuthenticated}
                     role={role}
                 />
             </div>
-
-            {/* Hero */}
-            <section className="relative mx-auto grid min-h-[650px] w-[92%] max-w-7xl items-center gap-14 py-20 lg:grid-cols-[1.1fr_.9fr] lg:py-28">
-                <div className="relative z-10">
-                    <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-violet-500/20 bg-violet-500/[0.07] px-4 py-2 text-sm text-violet-300">
-                        <span className="h-2 w-2 rounded-full bg-violet-400 shadow-[0_0_12px_#a78bfa]" />
+            {/* Hero Interactive Main Segment */}
+            <section className="relative z-10 mx-auto grid min-h-[calc(100--80px)] w-[94%] max-w-7xl items-center gap-12 py-16 lg:grid-cols-[1.15fr_.85fr] lg:py-24">
+                <div className="space-y-7 text-left">
+                    {/* Upper Dynamic Status Badge */}
+                    <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/20 bg-purple-500/[0.05] px-4 py-1.5 text-xs font-semibold text-purple-300 backdrop-blur-md shadow-sm">
+                        <span className="h-2 w-2 rounded-full bg-purple-400 shadow-[0_0_12px_#a78bfa] animate-pulse" />
                         One workspace. Better organization.
                     </div>
 
-                    <h1 className="max-w-3xl text-5xl font-extrabold leading-[1.12] tracking-tight sm:text-6xl lg:text-7xl">
+                    <h1 className="text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl text-white">
                         Turn your ideas into{" "}
-                        <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-violet-500 bg-clip-text text-transparent">
+                        <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                             real progress.
                         </span>
                     </h1>
 
-                    <p className="mt-7 max-w-2xl text-base leading-8 text-zinc-400 sm:text-lg">
-                        Workora brings your projects and tasks together in
-                        one organized workspace, helping you manage your work,
-                        track progress, and stay focused on what matters.
+                    <p className="max-w-2xl text-sm leading-7 text-gray-400 sm:text-base">
+                        Workora brings your projects and tasks together in one organized cloud workspace, helping you secure workflows, monitor operational velocity, and maintain focus on critical milestones.
                     </p>
 
-                    <div className="mt-9 flex flex-col gap-4 sm:flex-row">
+                    {/* Interactive Action Call Handles */}
+                    <div className="flex flex-col sm:flex-row gap-4 pt-2">
                         <Link
                             href={workspaceHref}
-                            className="group inline-flex items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-7 py-4 font-semibold text-white shadow-[0_0_35px_rgba(99,102,241,.2)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_0_45px_rgba(99,102,241,.35)]"
+                            className="group inline-flex items-center justify-center gap-2.5 rounded-xl bg-purple-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-purple-600/20 transition-all duration-200 hover:bg-purple-700 hover:-translate-y-0.5 active:scale-[0.99]"
                         >
-                            {isAuthenticated ? "Open Workspace" : "Get Started"}
-                            <FiArrowRight className="transition-transform group-hover:translate-x-1" />
+                            {isAuthenticated ? "Open Control Workspace" : "Initialize Account"}
+                            <FiArrowRight className="text-sm transition-transform group-hover:translate-x-1" />
                         </Link>
 
                         <Link
                             href="/about"
-                            className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] px-7 py-4 font-medium text-zinc-300 transition hover:border-white/20 hover:bg-white/[0.07] hover:text-white"
+                            className="inline-flex items-center justify-center rounded-xl border border-gray-800 bg-[#141423]/30 px-6 py-3.5 text-sm font-semibold text-gray-300 transition hover:border-gray-700 hover:bg-[#141423]/60 hover:text-white"
                         >
-                            Discover Workora
+                            Discover System Goals
                         </Link>
                     </div>
 
-                    <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-zinc-500">
-                        <span className="flex items-center gap-2">
-                            <FiShield className="text-emerald-400" />
-                            Security-focused
-                        </span>
-                        <span className="flex items-center gap-2">
-                            <FiLayers className="text-blue-400" />
-                            Organized workflow
-                        </span>
-                        <span className="flex items-center gap-2">
-                            <FiTarget className="text-violet-400" />
-                            Progress tracking
-                        </span>
+                    {/* Micro-Features Metadata Ribbon */}
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-4 text-xs font-bold uppercase tracking-wider text-gray-500">
+                        <span className="flex items-center gap-2"><FiShield className="text-emerald-400 text-sm" /> Security-focused</span>
+                        <span className="flex items-center gap-2"><FiLayers className="text-blue-400 text-sm" /> Layered Workflow</span>
+                        <span className="flex items-center gap-2"><FiTarget className="text-purple-400 text-sm" /> Velocity Tracking</span>
                     </div>
                 </div>
 
-                {/* Workspace preview */}
-                <div className="relative mx-auto w-full max-w-xl">
-                    <div className="absolute inset-8 rounded-full bg-violet-600/20 blur-[100px]" />
+                {/* 📊 الجزء المصلح والمقفل بالكامل لوحة المعاينة التفاعلية - Premium Glassmorphic Live Overview Tracker */}
+                <div className="relative mx-auto w-full max-w-xl lg:w-full animate-fadeIn">
+                    <div className="absolute inset-12 rounded-full bg-purple-600/[0.03] blur-[120px] pointer-events-none" />
 
-                    <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-zinc-950/90 p-5 shadow-[0_30px_100px_rgba(0,0,0,.6)] backdrop-blur-2xl sm:p-7">
-                        <div className="flex items-center justify-between border-b border-white/[0.08] pb-5">
+                    <div className="relative overflow-hidden rounded-[32px] border border-white/5 bg-[#0d0d16]/80 p-6 shadow-[0_30px_100px_rgba(0,0,0,.75)] backdrop-blur-2xl sm:p-8 space-y-6">
+                        <div className="flex items-center justify-between border-b border-gray-900/60 pb-5">
                             <div>
-                                <p className="text-xs uppercase tracking-[0.2em] text-violet-400">
-                                    Workspace
-                                </p>
-                                <h2 className="mt-2 text-xl font-bold">
-                                    Your Overview
-                                </h2>
+                                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-purple-400">Environment Node</p>
+                                <h2 className="mt-1 text-lg font-bold text-white tracking-tight">Your Infrastructure</h2>
                             </div>
-
-                            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-violet-500/20 bg-violet-500/10">
-                                <FiActivity className="text-xl text-violet-300" />
+                            <div className="flex h-10 w-11 items-center justify-center rounded-xl border border-purple-500/20 bg-purple-500/5">
+                                <FiActivity className="text-lg text-purple-400 animate-pulse" />
                             </div>
                         </div>
 
-                        <div className="mt-6 grid grid-cols-2 gap-4">
-                            <div className="rounded-2xl border border-blue-500/15 bg-blue-500/[0.06] p-4">
-                                <FiLayers className="text-xl text-blue-400" />
-                                <p className="mt-5 text-sm text-zinc-400">
-                                    Projects
-                                </p>
-                                <p className="mt-1 text-lg font-semibold">
-                                    Organized
-                                </p>
-                            </div>
-
-                            <div className="rounded-2xl border border-violet-500/15 bg-violet-500/[0.06] p-4">
-                                <FiCheckSquare className="text-xl text-violet-400" />
-                                <p className="mt-5 text-sm text-zinc-400">
-                                    Tasks
-                                </p>
-                                <p className="mt-1 text-lg font-semibold">
-                                    Track progress
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="mt-5 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5">
-                            <div className="flex items-center justify-between gap-3">
+                        {/* شبكة توزيع المعطيات الصافية المغلقة */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="rounded-2xl border border-blue-500/10 bg-blue-500/[0.02] p-4 flex flex-col justify-between h-28 hover:border-blue-500/20 transition">
+                                <FiLayers className="text-lg text-blue-400" />
                                 <div>
-                                    <p className="font-semibold">
-                                        Built around your workflow
-                                    </p>
-                                    <p className="mt-1 text-sm text-zinc-500">
-                                        Plan, organize, and review.
-                                    </p>
+                                    <p className="text-[11px] font-medium text-gray-500">Project Nodes</p>
+                                    <p className="text-sm font-bold text-white mt-0.5">Highly Organized</p>
                                 </div>
-                                <FiTarget className="shrink-0 text-2xl text-emerald-400" />
                             </div>
 
-                            <div className="mt-5 space-y-3">
-                                {[
-                                    {
-                                        label: "Plan your projects",
-                                        width: "w-full",
-                                        color: "bg-blue-500",
-                                    },
-                                    {
-                                        label: "Manage daily tasks",
-                                        width: "w-4/5",
-                                        color: "bg-violet-500",
-                                    },
-                                    {
-                                        label: "Review your progress",
-                                        width: "w-3/5",
-                                        color: "bg-emerald-500",
-                                    },
-                                ].map((item) => (
-                                    <div key={item.label}>
-                                        <p className="mb-2 text-xs text-zinc-400">
-                                            {item.label}
-                                        </p>
-                                        <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
-                                            <div
-                                                className={`h-full rounded-full ${item.width} ${item.color} opacity-80`}
-                                            />
-                                        </div>
-                                    </div>
-                                ))}
+                            <div className="rounded-2xl border border-purple-500/10 bg-purple-500/[0.02] p-4 flex flex-col justify-between h-28 hover:border-purple-500/20 transition">
+                                <FiCheckSquare className="text-lg text-purple-400" />
+                                <div>
+                                    <p className="text-[11px] font-medium text-gray-500">Atomic Tasks</p>
+                                    <p className="text-sm font-bold text-white mt-0.5">Velocity Synced</p>
+                                </div>
                             </div>
                         </div>
-
-                        <div className="mt-5 flex items-center gap-3 rounded-xl border border-emerald-500/15 bg-emerald-500/[0.04] p-4">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10">
-                                <FiShield className="text-emerald-400" />
+                        {/* الجزء السفلي المكمل للوحة الاستعراض الجانبية */}
+                        <div className="rounded-2xl border border-gray-800/60 bg-[#121222]/40 p-4 flex items-center justify-between text-xs">
+                            <div className="flex items-center gap-3">
+                                <span className="p-2 bg-[#16162a] border border-gray-800 rounded-lg text-emerald-400"><FiCpu /></span>
+                                <div>
+                                    <p className="font-bold text-gray-300">Access Node Firewall</p>
+                                    <p className="text-[10px] text-gray-500 mt-0.5">Token encryption gate active</p>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-sm font-semibold text-zinc-200">
-                                    Security matters
-                                </p>
-                                <p className="mt-1 text-xs text-zinc-500">
-                                    Access control is part of the platform.
-                                </p>
-                            </div>
+                            <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/5 px-2 py-0.5 rounded border border-emerald-500/10">SECURE</span>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Features */}
-            <section className="relative border-t border-white/[0.06] bg-zinc-950/50 py-20 sm:py-24">
-                <div className="mx-auto w-[92%] max-w-7xl">
-                    <div className="mx-auto max-w-2xl text-center">
-                        <p className="text-sm font-semibold uppercase tracking-[0.25em] text-violet-400">
-                            What you can do
-                        </p>
-                        <h2 className="mt-4 text-3xl font-bold sm:text-4xl">
-                            Everything starts with a{" "}
-                            <span className="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">
-                                clearer workflow.
-                            </span>
-                        </h2>
-                        <p className="mt-5 leading-7 text-zinc-400">
-                            Keep your work structured with tools designed
-                            around projects, tasks, and responsible access.
-                        </p>
+            {/* 📋 قسم مصفوفة المميزات التحليلية السفلية المطور بالكامل للعامة */}
+            <section className="relative z-10 border-t border-gray-900 bg-[#0a0a10]/40 py-16 backdrop-blur-sm">
+                <div className="mx-auto w-[94%] max-w-7xl space-y-10">
+                    <div className="text-center max-w-xl mx-auto space-y-2">
+                        <h2 className="text-xs font-bold text-purple-400 uppercase tracking-widest">[ Architectural Layers ]</h2>
+                        <p className="text-2xl font-extrabold text-white tracking-tight">Everything starts with a clearer workflow.</p>
+                        <p className="text-xs text-gray-500 leading-5">Keep your core software deliverables structured with modular automation tools built around micro-projects, tasks, and responsible session access rules.</p>
                     </div>
 
-                    <div className="mt-14 grid gap-5 md:grid-cols-3">
-                        {features.map((feature) => {
-                            const Icon = feature.icon;
-
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {features.map((feat) => {
+                            const IconComponent = feat.icon;
                             return (
-                                <article
-                                    key={feature.title}
-                                    className="group rounded-2xl border border-white/[0.08] bg-white/[0.02] p-7 transition duration-300 hover:-translate-y-1 hover:border-violet-500/25 hover:bg-white/[0.035]"
+                                <div 
+                                    key={feat.title}
+                                    className={`relative overflow-hidden rounded-2xl border ${feat.border} bg-[#0d0d16]/60 p-6 space-y-4 hover:bg-[#0d0d16] transition-all duration-200 group`}
                                 >
-                                    <div
-                                        className={`flex h-12 w-12 items-center justify-center rounded-xl ${feature.glow}`}
-                                    >
-                                        <Icon className={`text-2xl ${feature.color}`} />
+                                    <div className={`p-3 w-11 h-10 rounded-xl ${feat.glow} flex items-center justify-center ${feat.color} border border-white/5`}>
+                                        <IconComponent className="text-lg" />
                                     </div>
-
-                                    <h3 className="mt-6 text-xl font-bold">
-                                        {feature.title}
-                                    </h3>
-
-                                    <p className="mt-3 leading-7 text-zinc-400">
-                                        {feature.description}
-                                    </p>
-                                </article>
+                                    <div className="space-y-1">
+                                        <h3 className="text-base font-bold text-white tracking-wide flex items-center justify-between">
+                                            {feat.title}
+                                            <FiArrowUpRight className="text-gray-600 text-xs transition-colors group-hover:text-purple-400" />
+                                        </h3>
+                                        <p className="text-xs text-gray-400 leading-5">{feat.description}</p>
+                                    </div>
+                                </div>
                             );
                         })}
                     </div>
                 </div>
             </section>
-
-            {/* Workflow section */}
-            <section className="relative py-20 sm:py-24">
-                <div className="mx-auto grid w-[92%] max-w-7xl items-center gap-12 lg:grid-cols-2">
-                    <div>
-                        <p className="text-sm font-semibold uppercase tracking-[0.25em] text-blue-400">
-                            A simpler way to work
-                        </p>
-
-                        <h2 className="mt-4 text-3xl font-bold leading-tight sm:text-4xl">
-                            From planning to completion,{" "}
-                            <span className="text-violet-400">
-                                stay in control.
-                            </span>
-                        </h2>
-
-                        <p className="mt-5 max-w-xl leading-8 text-zinc-400">
-                            Keep project information organized, break work
-                            into manageable tasks, and see what needs your
-                            attention next. Workora is designed to give your
-                            workflow a clear structure.
-                        </p>
-
-                        <Link
-                            href={workspaceHref}
-                            className="group mt-8 inline-flex items-center gap-3 font-semibold text-violet-300 transition hover:text-violet-200"
-                        >
-                            {isAuthenticated ? "Go to your projects" : "Start using Workora"}
-                            <FiArrowRight className="transition-transform group-hover:translate-x-1" />
-                        </Link>
-                    </div>
-
-                    <div className="space-y-4">
-                        {[
-                            {
-                                number: "01",
-                                title: "Create a project",
-                                description:
-                                    "Define the work you want to organize.",
-                                color: "text-blue-400",
-                            },
-                            {
-                                number: "02",
-                                title: "Organize your tasks",
-                                description:
-                                    "Break work into clear, manageable steps.",
-                                color: "text-violet-400",
-                            },
-                            {
-                                number: "03",
-                                title: "Track progress",
-                                description:
-                                    "Review statuses and keep your work moving.",
-                                color: "text-emerald-400",
-                            },
-                        ].map((step) => (
-                            <div
-                                key={step.number}
-                                className="flex gap-5 rounded-2xl border border-white/[0.08] bg-zinc-950/70 p-5 transition hover:border-white/15 sm:p-6"
-                            >
-                                <span className={`pt-1 text-sm font-bold ${step.color}`}>
-                                    {step.number}
-                                </span>
-                                <div>
-                                    <h3 className="font-semibold text-zinc-100">
-                                        {step.title}
-                                    </h3>
-                                    <p className="mt-2 text-sm leading-6 text-zinc-500">
-                                        {step.description}
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Call to action */}
-            <section className="relative px-4 pb-20 sm:pb-28">
-                <div className="relative mx-auto max-w-7xl overflow-hidden rounded-3xl border border-violet-500/20 bg-gradient-to-br from-blue-950/50 via-zinc-950 to-violet-950/50 px-6 py-14 text-center sm:px-12 sm:py-20">
-                    <div className="pointer-events-none absolute left-1/2 top-0 h-64 w-96 -translate-x-1/2 rounded-full bg-violet-600/15 blur-[100px]" />
-
-                    <div className="relative">
-                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-violet-500/20 bg-violet-500/10">
-                            <FiUsers className="text-2xl text-violet-300" />
-                        </div>
-
-                        <h2 className="mt-6 text-3xl font-bold sm:text-4xl">
-                            Ready to organize your work?
-                        </h2>
-
-                        <p className="mx-auto mt-4 max-w-xl leading-7 text-zinc-400">
-                            Bring your projects and tasks into one workspace
-                            and take the next step toward a more organized workflow.
-                        </p>
-
-                        <Link
-                            href={workspaceHref}
-                            className="mt-8 inline-flex items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-7 py-4 font-semibold text-white transition hover:-translate-y-1 hover:shadow-[0_0_35px_rgba(139,92,246,.3)]"
-                        >
-                            {isAuthenticated ? "Open Workora" : "Get Started"}
-                            <FiArrowRight />
-                        </Link>
-                    </div>
-                </div>
-            </section>
-
-            {/* Footer */}
-            <footer className="relative border-t border-white/[0.08] bg-zinc-950/80">
-                <div className="mx-auto flex w-[92%] max-w-7xl flex-col gap-4 py-7 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
-                    <Link
-                        href="/"
-                        className="w-fit bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-lg font-bold text-transparent"
-                    >
-                        Workora
-                    </Link>
-
-                    <p>
-                        Projects, tasks, and a more organized workflow.
-                    </p>
-
-                    <Link
-                        href="/about"
-                        className="w-fit transition hover:text-white"
-                    >
-                        About Us
-                    </Link>
-                </div>
-            </footer>
         </main>
     );
 }

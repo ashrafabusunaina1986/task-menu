@@ -2,21 +2,20 @@
 
 import TaskCreate from "@/components/task/create/TaskCreate";
 import { redirect } from "next/navigation";
+
 interface TaskCreatePageProps {
     searchParams: Promise<{
-        project_id?: string
-    }>
+        project_id?: string;
+    }>;
 }
 
-export default async function CreateTaskPage(
-    { searchParams }: TaskCreatePageProps
-) {
-    const { project_id } = await searchParams
+export default async function CreateTaskPage({ searchParams }: TaskCreatePageProps) {
+    const { project_id } = await searchParams;
 
+    // إصلاح الأمان والإنتاج: إزالة الـ alert القاتلة التي تعطل السيرفر، واستخدام إعادة توجيه آمنة ومشفرة
     if (!project_id) {
-        alert("Project id is required")
-        return redirect("/project")
-
+        return redirect("/project?error=missing_project_id");
     }
-    return <TaskCreate projectId={project_id} />
+
+    return <TaskCreate projectId={project_id} />;
 }

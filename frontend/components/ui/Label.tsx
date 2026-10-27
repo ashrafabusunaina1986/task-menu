@@ -1,17 +1,23 @@
 // components/ui/Label.tsx
 
-import { LabelHTMLAttributes } from "react"
+import { LabelHTMLAttributes } from "react";
 
-type Props = LabelHTMLAttributes<HTMLLabelElement>
+type LabelProps = LabelHTMLAttributes<HTMLLabelElement>;
 
-export default function Label(props: Props) {
+export default function Label({ className, ...props }: LabelProps) {
     return (
         <label
             {...props}
             className={`
-        mb-2 block text-sm text-gray-300
-        ${props.className ?? ""}
-        `}
+                block
+                text-[11px]
+                font-bold
+                text-gray-400
+                uppercase
+                tracking-wider
+                select-none
+                ${className ?? ""}
+            `}
         />
-    )
+    );
 }

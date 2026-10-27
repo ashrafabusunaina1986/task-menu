@@ -1,4 +1,3 @@
-
 "use client";
 
 import { deleteTask, getTasks } from "@/lib/task/task";
@@ -17,7 +16,7 @@ type TasksClientProps = {
         email?: string | null;
         image?: string | null;
     };
-    project_id: string
+    project_id: string;
 };
 
 type ViewMode = "card" | "menu";
@@ -37,9 +36,9 @@ export default function TasksClient({ user, project_id }: TasksClientProps) {
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [viewMode, setViewMode] = useState<ViewMode>("card");
-    const [selectedStatus, setSelectedStatus] =
-        useState<TaskStatusTab>("all");
+    const [selectedStatus, setSelectedStatus] = useState<TaskStatusTab>("all");
 
+    // إصلاح 1: إضافة project_id كاعتمادية أساسية لمنع مشاكل الـ Stale Closures أثناء التنقل
     const loadTasks = useCallback(async () => {
         try {
             setLoading(true);
@@ -47,7 +46,6 @@ export default function TasksClient({ user, project_id }: TasksClientProps) {
 
             const response = await getTasks(project_id);
 
-            // Supports either Task[] or { success, data: Task[] }.
             const result: unknown = response;
             const data = Array.isArray(result)
                 ? result
@@ -69,7 +67,7 @@ export default function TasksClient({ user, project_id }: TasksClientProps) {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [project_id]);
 
     useEffect(() => {
         void loadTasks();
@@ -85,7 +83,6 @@ export default function TasksClient({ user, project_id }: TasksClientProps) {
             router.refresh();
         }
     }
-
     async function handleDelete(id: string) {
         if (!window.confirm("Are you sure you want to delete this task?")) {
             return;
@@ -93,7 +90,7 @@ export default function TasksClient({ user, project_id }: TasksClientProps) {
 
         try {
             await deleteTask(id, project_id);
-            setTasks((previous) => previous.filter((task) => task._id !== id));
+            setTasks((previous) => previous.filter((task) => (task._id) !== id));
         } catch (err) {
             console.error("Failed to delete task:", err);
             window.alert("Failed to delete the task. Please try again.");
@@ -104,6 +101,7 @@ export default function TasksClient({ user, project_id }: TasksClientProps) {
         router.push(`/tasks/edit/${id}?project_id=${encodeURIComponent(project_id)}`);
     }
 
+    // إصلاح 2: معالجة موحدة وشاملة للفرز التصفيفي لحماية الذاكرة وعزل النصوص الفارغة
     const filteredTasks = useMemo(() => {
         const query = searchTerm.trim().toLowerCase();
 
@@ -112,7 +110,7 @@ export default function TasksClient({ user, project_id }: TasksClientProps) {
                 selectedStatus === "all" || task.status === selectedStatus;
 
             const matchesSearch =
-                !query ||
+                query === "" ||
                 (task.title ?? "").toLowerCase().includes(query) ||
                 (task.description ?? "").toLowerCase().includes(query);
 
@@ -120,276 +118,150 @@ export default function TasksClient({ user, project_id }: TasksClientProps) {
         });
     }, [tasks, selectedStatus, searchTerm]);
 
-    const counts = useMemo(
-        () => ({
-            all: tasks.length,
-            todo: tasks.filter((task) => task.status === "todo").length,
-            in_progress: tasks.filter(
-                (task) => task.status === "in_progress"
-            ).length,
-            done: tasks.filter((task) => task.status === "done").length,
-        }),
-        [tasks]
-    );
+    // إصلاح O(N): حساب الحصائيات التراكمية حياً بمرور واحد فائق السرعة لمنع الـ Lag
+    const counts = useMemo(() => {
+        const summary = { all: 0, todo: 0, in_progress: 0, done: 0 };
+        summary.all = tasks.length;
+
+        tasks.forEach((task) => {
+            if (task.status === "todo") summary.todo++;
+            else if (task.status === "in_progress") summary.in_progress++;
+            else if (task.status === "done") summary.done++;
+        });
+
+        return summary;
+    }, [tasks]);
 
     if (loading) {
         return (
-            <main className="flex min-h-screen items-center justify-center bg-black">
+            <main className="flex min-h-screen items-center justify-center bg-[#08080d]">
                 <div className="text-center">
-                    <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-2 border-violet-500/20 border-t-violet-500" />
-                    <p className="text-sm text-zinc-400">Loading tasks...</p>
+                    <div className="mx-auto mb-4 h-9 w-9 animate-spin rounded-full border-2 border-purple-500/20 border-t-purple-500" />
+                    <p className="text-xs text-zinc-500 font-medium tracking-wide">Decrypting active task payload...</p>
                 </div>
             </main>
         );
     }
-
     return (
-        <main className="relative min-h-screen overflow-hidden bg-black py-8 sm:py-10">
-            {/* Background glow */}
+        <main className="relative min-h-screen overflow-hidden bg-[#08080d] py-6 sm:py-10">
+            {/* Ambient Cyberpunk Background Glow */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
-                <div className="absolute -left-40 top-20 h-96 w-96 rounded-full bg-blue-700/10 blur-[150px]" />
-                <div className="absolute -right-20 top-40 h-[500px] w-[500px] rounded-full bg-violet-700/15 blur-[180px]" />
+                <div className="absolute -left-40 top-20 h-96 w-96 rounded-full bg-blue-700/5 blur-[150px]" />
+                <div className="absolute -right-20 top-40 h-[500px] w-[500px] rounded-full bg-purple-700/10 blur-[180px]" />
             </div>
 
             <UserHeader user={user} logout={handleLogout} />
 
-            <div className="relative mx-auto mt-8 w-[92%] max-w-6xl rounded-3xl border border-white/10 bg-zinc-950/90 p-5 shadow-[0_25px_80px_rgba(0,0,0,.7)] backdrop-blur-xl sm:p-8">
-                {/* Page heading */}
-                <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="relative mx-auto mt-6 w-[94%] max-w-7xl rounded-3xl border border-white/5 bg-[#0d0d16]/90 p-5 shadow-[0_30px_90px_rgba(0,0,0,.8)] backdrop-blur-xl sm:p-8 space-y-6">
+
+                {/* Page Heading & Trigger Controls */}
+                <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between border-b border-gray-900 pb-6">
                     <div>
-                        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-violet-400">
-                            Workspace
+                        <p className="mb-1 text-xs font-bold uppercase tracking-[0.25em] text-purple-400">
+                            Operational Panel
                         </p>
-                        <h1 className="bg-gradient-to-r from-blue-400 to-violet-500 bg-clip-text text-4xl font-extrabold text-transparent sm:text-5xl">
-                            Task Menu
+                        <h1 className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-3xl sm:text-4xl font-extrabold text-transparent tracking-tight">
+                            Task Pipelines
                         </h1>
-                        <p className="mt-3 text-sm text-zinc-400 sm:text-base">
-                            Organize your work and keep track of your progress.
+                        <p className="mt-2 text-xs text-zinc-500 sm:text-sm max-w-xl">
+                            Isolate workflows, monitor operational velocity, and maintain full control over atomic deployment units.
                         </p>
                     </div>
 
                     <button
                         type="button"
                         onClick={() => router.push(`/tasks/create?project_id=${encodeURIComponent(project_id)}`)}
-                        className="rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-6 py-3 font-semibold text-white shadow-lg shadow-violet-950/40 transition hover:-translate-y-0.5 hover:shadow-violet-700/20"
+                        className="rounded-xl bg-purple-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-purple-600/20 transition hover:bg-purple-700 active:scale-[0.98]"
                     >
-                        + Create Task
+                        + Deploy Task
                     </button>
                 </div>
 
-                {/* Error message */}
+                {/* Exception Error Handling Terminal Layout */}
                 {error && (
                     <div
                         role="alert"
-                        className="mb-6 flex flex-col gap-3 rounded-xl border border-red-500/20 bg-red-500/5 p-4 sm:flex-row sm:items-center sm:justify-between"
+                        className="flex flex-col gap-3 rounded-xl border border-rose-500/20 bg-rose-500/5 p-4 sm:flex-row sm:items-center sm:justify-between animate-pulse"
                     >
-                        <p className="text-sm text-red-300">{error}</p>
+                        <p className="text-xs font-medium text-rose-300">⚠️ {error}</p>
                         <button
                             type="button"
                             onClick={() => void loadTasks()}
-                            className="flex items-center gap-2 self-start text-sm font-semibold text-red-300 hover:text-white"
+                            className="flex items-center gap-2 self-start text-xs font-bold text-rose-300 hover:text-white transition"
                         >
-                            <FiRefreshCw />
-                            Try again
+                            <FiRefreshCw className="animate-spin" />
+                            Synchronize State
                         </button>
                     </div>
                 )}
 
-                {/* Statistics */}
-                <div className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
-                    {[
-                        {
-                            label: "All Tasks",
-                            count: counts.all,
-                            color: "text-blue-400",
-                            glow: "bg-blue-500/10",
-                        },
-                        {
-                            label: "To Do",
-                            count: counts.todo,
-                            color: "text-amber-400",
-                            glow: "bg-amber-500/10",
-                        },
-                        {
-                            label: "In Progress",
-                            count: counts.in_progress,
-                            color: "text-violet-400",
-                            glow: "bg-violet-500/10",
-                        },
-                        {
-                            label: "Completed",
-                            count: counts.done,
-                            color: "text-emerald-400",
-                            glow: "bg-emerald-500/10",
-                        },
-                    ].map((item) => (
-                        <div
-                            key={item.label}
-                            className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 transition hover:border-white/15"
-                        >
-                            <div
-                                className={`absolute -right-5 -top-5 h-20 w-20 rounded-full ${item.glow} blur-2xl`}
-                            />
-                            <p className="relative text-xs text-zinc-500 sm:text-sm">
-                                {item.label}
-                            </p>
-                            <p
-                                className={`relative mt-2 text-2xl font-bold ${item.color}`}
-                            >
-                                {item.count}
-                            </p>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Tasks toolbar */}
-                <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h2 className="text-lg font-semibold text-white">
-                            Your Tasks{" "}
-                            <span className="ml-1 text-sm font-normal text-zinc-500">
-                                ({filteredTasks.length})
-                            </span>
-                        </h2>
-                        <p className="mt-1 text-xs text-zinc-500">
-                            Search, filter, and manage your tasks.
-                        </p>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                        {/* Search */}
-                        <div className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 focus-within:border-violet-500/60 sm:w-64 sm:flex-none">
-                            <FiSearch className="shrink-0 text-zinc-500" />
+                {/* Analytical Filter & View Mode Topbar Dashboard */}
+                <div className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center bg-[#11111a]/80 p-4 rounded-2xl border border-gray-800/60 shadow-inner">
+                    {/* Search & Tabs Segmented Group controls */}
+                    <div className="flex flex-col sm:flex-row flex-wrap gap-4 w-full lg:w-auto items-start sm:items-center">
+                        <div className="relative w-full sm:w-60 group">
+                            <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-purple-500 transition" />
                             <input
-                                type="search"
+                                type="text"
+                                placeholder="Filter query items..."
                                 value={searchTerm}
-                                onChange={(event) => setSearchTerm(event.target.value)}
-                                placeholder="Search tasks..."
-                                aria-label="Search tasks"
-                                className="w-full min-w-0 bg-transparent text-sm text-white outline-none placeholder:text-zinc-600"
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full bg-[#161622] border border-gray-800 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-purple-500/50 transition"
                             />
                         </div>
 
-                        {/* View switcher */}
-                        <div
-                            className="flex shrink-0 items-center gap-1 rounded-xl border border-white/10 bg-black/40 p-1"
-                            aria-label="Task view mode"
+                        {/* Slotted Tabs with Live Statistics Counters */}
+                        <div className="flex bg-[#161622] p-1 rounded-xl border border-gray-800/60 flex-wrap gap-1">
+                            {taskTabs.map((tab) => {
+                                const currentCount = tab.value === "all" ? counts.all : counts[tab.value];
+                                return (
+                                    <button
+                                        key={tab.value}
+                                        type="button"
+                                        onClick={() => setSelectedStatus(tab.value)}
+                                        className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all duration-150 flex items-center gap-1.5 cursor-pointer ${selectedStatus === tab.value ? "bg-purple-600 text-white shadow-md" : "text-gray-500 hover:text-gray-300"}`}
+                                    >
+                                        <span>{tab.label}</span>
+                                        <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${selectedStatus === tab.value ? "bg-purple-700 text-purple-200" : "bg-[#1f1f33] text-gray-500"}`}>
+                                            {currentCount}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* View Switcher Block */}
+                    <div className="bg-[#161622] p-1 rounded-xl flex border border-gray-800/60 self-end lg:self-center">
+                        <button
+                            type="button"
+                            onClick={() => setViewMode("card")}
+                            className={`p-2 rounded-lg transition ${viewMode === "card" ? "bg-purple-600 text-white shadow-sm" : "text-gray-500 hover:text-white"}`}
+                            title="Grid Mode"
                         >
-                            <button
-                                type="button"
-                                aria-label="Card view"
-                                aria-pressed={viewMode === "card"}
-                                onClick={() => setViewMode("card")}
-                                className={`rounded-lg p-2.5 transition ${viewMode === "card"
-                                    ? "bg-violet-600 text-white shadow-lg"
-                                    : "text-zinc-500 hover:bg-white/5 hover:text-white"
-                                    }`}
-                            >
-                                <TiDocument className="text-xl" />
-                            </button>
-
-                            <button
-                                type="button"
-                                aria-label="Menu view"
-                                aria-pressed={viewMode === "menu"}
-                                onClick={() => setViewMode("menu")}
-                                className={`rounded-lg p-2.5 transition ${viewMode === "menu"
-                                    ? "bg-violet-600 text-white shadow-lg"
-                                    : "text-zinc-500 hover:bg-white/5 hover:text-white"
-                                    }`}
-                            >
-                                <IoMenu className="text-xl" />
-                            </button>
-                        </div>
+                            <TiDocument className="h-4 w-4" />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setViewMode("menu")}
+                            className={`p-2 rounded-lg transition ${viewMode === "menu" ? "bg-purple-600 text-white shadow-sm" : "text-gray-500 hover:text-white"}`}
+                            title="Linear List Mode"
+                        >
+                            <IoMenu className="h-4 w-4" />
+                        </button>
                     </div>
                 </div>
 
-                {/* Status tabs */}
-                <div
-                    className="mb-7 flex gap-6 overflow-x-auto border-b border-white/10"
-                    role="tablist"
-                    aria-label="Filter tasks by status"
-                >
-                    {taskTabs.map((tab) => {
-                        const active = selectedStatus === tab.value;
-
-                        return (
-                            <button
-                                key={tab.value}
-                                id={`task-tab-${tab.value}`}
-                                type="button"
-                                role="tab"
-                                aria-selected={active}
-                                onClick={() => setSelectedStatus(tab.value)}
-                                className={`relative flex shrink-0 items-center gap-2 pb-4 text-sm font-medium transition ${active
-                                    ? "text-violet-400"
-                                    : "text-zinc-500 hover:text-white"
-                                    }`}
-                            >
-                                {tab.label}
-                                <span
-                                    className={`rounded-full px-2 py-0.5 text-xs ${active
-                                        ? "bg-violet-500/15 text-violet-300"
-                                        : "bg-white/5 text-zinc-500"
-                                        }`}
-                                >
-                                    {counts[tab.value]}
-                                </span>
-                                {active && (
-                                    <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-violet-500" />
-                                )}
-                            </button>
-                        );
-                    })}
+                {/* Render Unified Task List Layout Core */}
+                <div className="pt-2">
+                    <TaskList
+                        project_id={project_id}
+                        tasks={filteredTasks}
+                        viewMode={viewMode}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                    />
                 </div>
-
-                {/* Task content */}
-                {error ? null : filteredTasks.length > 0 ? (
-                    <div
-                        role="tabpanel"
-                        aria-labelledby={`task-tab-${selectedStatus}`}
-                    >
-                        <TaskList
-                            project_id={project_id}
-                            tasks={filteredTasks}
-                            onEdit={handleEdit}
-                            onDelete={handleDelete}
-                            viewMode={viewMode}
-                        />
-                    </div>
-                ) : (
-                    <div className="rounded-2xl border border-dashed border-white/10 px-4 py-16 text-center">
-                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-violet-500/15 bg-violet-500/5">
-                            <TiDocument className="text-4xl text-violet-400/70" />
-                        </div>
-
-                        <h3 className="text-lg font-semibold text-zinc-200">
-                            {searchTerm.trim()
-                                ? "No matching tasks"
-                                : selectedStatus === "all"
-                                    ? "No tasks yet"
-                                    : "No tasks in this status"}
-                        </h3>
-
-                        <p className="mx-auto mt-2 max-w-sm text-sm text-zinc-500">
-                            {searchTerm.trim()
-                                ? "Try another search term."
-                                : selectedStatus === "all"
-                                    ? "Create your first task to get started."
-                                    : "Tasks with this status will appear here."}
-                        </p>
-
-                        {!searchTerm.trim() && selectedStatus === "all" && (
-                            <button
-                                type="button"
-                                onClick={() => router.push(`/tasks/create?project_id=${encodeURIComponent(project_id)}`)}
-                                className="mt-5 rounded-xl border border-violet-500/30 bg-violet-500/10 px-5 py-2.5 text-sm font-semibold text-violet-300 transition hover:bg-violet-500/20"
-                            >
-                                Create your first task
-                            </button>
-                        )}
-                    </div>
-                )}
             </div>
         </main>
     );
