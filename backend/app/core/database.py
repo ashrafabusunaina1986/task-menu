@@ -116,3 +116,7 @@ def get_pending_register_collection():
 
 def get_resend_otp_collection():
     return get_db().get_collection("resend_otp")
+
+
+def get_project_collection():
+    return get_db().get_collection("project")

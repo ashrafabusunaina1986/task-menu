@@ -1,6 +1,6 @@
 // app/api/tasks/route.ts
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 
 const BACKEND = process.env.API_URL_SERVER;
@@ -9,7 +9,9 @@ if (!BACKEND) {
     throw new Error("API_URL_SERVER is not defined");
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+
+
     try {
         const session = await auth();
 
@@ -30,18 +32,23 @@ export async function GET() {
             );
         }
         const token = session.accessToken;
+        const project_id = req.nextUrl.searchParams.get("project_id")
 
-        console.log("TOKEN EXISTS:", !!token);
-        console.log("TOKEN PREFIX:", token?.slice(0, 20));
-        console.log({ "TASK SESSION": session });
-
-        console.log({
-            "TOKEN EXISTS":
-                !!session?.accessToken
+        if (!project_id) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Project id is required"
+                },
+                {
+                    status: 400
+                }
+            )
         }
-        );
 
-        const res = await fetch(`${BACKEND}/tasks/`, {
+
+
+        const res = await fetch(`${BACKEND}/tasks/?project_id=${encodeURIComponent(project_id)}`, {
             headers: {
                 Authorization: `Bearer ${session.accessToken}`,
                 Accept: "application/json"
@@ -76,7 +83,7 @@ export async function GET() {
     }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     try {
         const session = await auth();
 
@@ -91,6 +98,8 @@ export async function POST(req: Request) {
                 }
             );
         }
+
+
 
         const body = await req.json();
 

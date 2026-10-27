@@ -344,6 +344,8 @@ export default function VerifyOTP() {
                 e_mail
             )
 
+            console.log(result)
+
 
             // ---------------------------------------
             // RESEND ERROR
@@ -376,7 +378,6 @@ export default function VerifyOTP() {
             setResendCooldown(60)
 
         } catch (error) {
-
             setError(
                 error instanceof Error
                     ? error.message

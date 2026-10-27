@@ -22,6 +22,7 @@ router = APIRouter()
 )
 async def delete_task(
     task_id: str,
+    project_id: str,
     service: TaskService = Depends(get_task_service),
     user: User = Depends(get_current_user_dependency),
     security: DependencyService = Depends(get_security_service)
@@ -32,5 +33,24 @@ async def delete_task(
     )
     return await service.delete(
         task_id=task_id,
-        user=user
+        user=user,
+        project_id=project_id
     )
+
+
+@router.delete(
+    "/{project_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=bool
+)
+async def delete_tasks(
+    project_id: str,
+    service: TaskService = Depends(get_task_service),
+    user: User = Depends(get_current_user_dependency),
+    security: DependencyService = Depends(get_security_service)
+) -> bool:
+    security.require_permission_dependency.require_permission(
+        user=user,
+        permission=Permission.TASKS_DELETE
+    )
+    return await service.delete_tasks(project_id)

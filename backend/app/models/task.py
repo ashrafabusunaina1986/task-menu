@@ -15,8 +15,10 @@ Priority = Literal[
 class Task(BaseModel):
     id: Optional[str] = Field(default=None, alias="_id")
 
-    user_id: str
-    title: str
+    user_id: str = Field(min_length=1)
+    project_id: str = Field(min_length=1)
+
+    title: str = Field(min_length=1)
     description: Optional[str] = None
 
     status: Status = "todo"
@@ -28,5 +30,6 @@ class Task(BaseModel):
     model_config = ConfigDict(
         validate_assignment=True,
         populate_by_name=True,
-        extra="forbid"
+        extra="forbid",
+        str_strip_whitespace=True
     )

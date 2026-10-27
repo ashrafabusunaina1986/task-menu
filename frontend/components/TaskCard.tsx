@@ -5,12 +5,14 @@ import { Task } from "@/types/task";
 import { useRouter } from "next/navigation";
 
 interface TaskCardProps {
+    project_id: string
     task: Task
     onEdit: (id: string) => void
     onDelete: (id: string) => void
 }
 
 export default function TaskCard({
+    project_id,
     task,
     onEdit,
     onDelete
@@ -57,12 +59,12 @@ export default function TaskCard({
                     mb-3
                     cursor-pointer
                 "
-                onClick={() => router.push(`/tasks/${task._id}`)}
+                onClick={() => router.push(`/tasks/${task._id}?project_id=${encodeURIComponent(project_id)}`)}
             >
                 {task.title}
             </h2>
 
-            <p className="text-gray-400 min-h-[60px]">
+            <p className="text-gray-400 min-h-[60px] break-all">
                 {task.description || "No description"}
             </p>
 

@@ -18,6 +18,7 @@ from app.routes.user_block.route import UserBlockRoute
 from app.routes.security_attempts.route import (
     SecurityAttemptsRoute
 )
+from app.routes.project.route import project_router
 
 from app.core.config import settings
 from app.middleware.swagger import setup_swagger_protection
@@ -90,6 +91,10 @@ def register_routes(
 
     app.include_router(
         SecurityAttemptsRoute().router
+    )
+
+    app.include_router(
+        project_router
     )
 
 

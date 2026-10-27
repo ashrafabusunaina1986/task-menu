@@ -1,5 +1,6 @@
 # app/security/permissions/policy.py
 
+
 from app.security.permissions.roles import Role
 from app.security.permissions.permissions import Permission
 
@@ -16,20 +17,39 @@ class PermissionPolicy:
             Permission.TASKS_CREATE,
             Permission.TASKS_DELETE,
             Permission.TASKS_READ,
-            Permission.TASKS_UPDATE
+            Permission.TASKS_UPDATE,
+
+            Permission.PROJECTS_CREATE,
+            Permission.PROJECTS_READ,
+            Permission.PROJECTS_UPDATE,
+            Permission.PROJECTS_DELETE,
+            Permission.PROJECTS_ASSIGN_OWNER,
+            Permission.PROJECTS_CREATE_UNASSIGNED
         },
+
         Role.MANAGER: {
             Permission.TASKS_CREATE,
             Permission.TASKS_DELETE,
             Permission.TASKS_READ,
-            Permission.TASKS_UPDATE
-        },
-        Role.USER: {
+            Permission.TASKS_UPDATE,
 
+            Permission.PROJECTS_CREATE,
+            Permission.PROJECTS_READ,
+            Permission.PROJECTS_UPDATE,
+            Permission.PROJECTS_DELETE,
+            Permission.PROJECTS_CREATE_UNASSIGNED,
+            Permission.PROJECTS_ASSIGN_OWNER,
+        },
+
+        Role.USER: {
             Permission.TASKS_CREATE,
             Permission.TASKS_DELETE,
             Permission.TASKS_READ,
-            Permission.TASKS_UPDATE
+            Permission.TASKS_UPDATE,
+
+            Permission.PROJECTS_CREATE,
+            Permission.PROJECTS_READ,
+            Permission.PROJECTS_UPDATE,
         }
     }
 

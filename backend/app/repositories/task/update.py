@@ -1,6 +1,6 @@
 # app/repositories/task/update.py
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from bson import ObjectId
 from bson.errors import InvalidId
@@ -17,19 +17,22 @@ class TaskUpdateRepository:
     async def update(
         self,
         task_id: str,
+        project_id: str,
         data: dict
     ):
+        now = datetime.now(timezone.utc)
 
         try:
 
             update_data = {
                 **data,
-                "updated_at": datetime.utcnow()
+                "updated_at": now
             }
 
             return await get_tasks_collection().update_one(
                 {
-                    "_id": ObjectId(task_id)
+                    "_id": ObjectId(task_id),
+                    "project_id": project_id
                 },
                 {
                     "$set": update_data
@@ -47,20 +50,22 @@ class TaskUpdateRepository:
         self,
         task_id: str,
         user_id: str,
+        project_id: str,
         data: dict
     ):
-
+        now = datetime.now(timezone.utc)
         try:
 
             update_data = {
                 **data,
-                "updated_at": datetime.utcnow()
+                "updated_at": now
             }
 
             return await get_tasks_collection().update_one(
                 {
                     "_id": ObjectId(task_id),
-                    "user_id": user_id
+                    "user_id": user_id,
+                    "project_id": project_id
                 },
                 {
                     "$set": update_data

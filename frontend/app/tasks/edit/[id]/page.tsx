@@ -5,21 +5,29 @@
 import TaskForm from "@/components/TaskForm";
 import { getTask, updateTask } from "@/lib/task/task";
 import { Task, UpdateTask } from "@/types/task";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, notFound } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
-export default function EditTaskPage() {
+interface TaskEditPageProps {
+    searchParams: Promise<{
+        project_id?: string
+    }>
+}
+
+export default function EditTaskPage({ searchParams }: TaskEditPageProps) {
     const router = useRouter();
     const params = useParams<{ id: string }>();
     const id = params.id;
-
     const [task, setTask] = useState<Task | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function loadTask() {
+
+            const { project_id } = await searchParams
+            if (!project_id) notFound()
             try {
-                const data = await getTask(id);
+                const data = await getTask(id, project_id);
                 setTask(data);
             } catch (error) {
                 console.error(error);
@@ -36,7 +44,13 @@ export default function EditTaskPage() {
         if (!task) return;
 
         try {
-            await updateTask(task._id ?? (task as any)._id, data);
+            const { project_id } = await searchParams
+            if (!project_id) notFound()
+            await updateTask(
+                task._id ?? (task as any)._id,
+                data,
+                project_id
+            );
             router.push("/tasks");
         } catch (error) {
             console.error(error);

@@ -1,15 +1,36 @@
+
 // app/tasks/TasksPage.tsx
 
 import { auth } from "@/auth"
-import TasksClient from "./TasksClient"
 import { redirect } from "next/navigation"
 
-export default async function TasksPage() {
+import TasksClient from "./TasksClient"
+
+interface TasksPageProps {
+    searchParams: Promise<{
+        project_id?: string
+    }>
+}
+
+export default async function TasksPage({
+    searchParams,
+}: TasksPageProps) {
     const session = await auth()
 
     if (!session?.accessToken) {
         redirect("/login")
     }
 
-    return <TasksClient user={session.user} />
+    const { project_id } = await searchParams
+
+    if (!project_id) {
+        redirect("/project")
+    }
+
+    return (
+        <TasksClient
+            user={session.user}
+            project_id={project_id}
+        />
+    )
 }

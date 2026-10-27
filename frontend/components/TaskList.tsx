@@ -5,6 +5,7 @@ import Link from "next/link";
 type ViewMode = "card" | "menu";
 
 interface TaskListProps {
+    project_id: string;
     tasks: Task[];
     onEdit: (id: string) => void;
     onDelete: (id: string) => void;
@@ -27,6 +28,7 @@ const statuses = [
 ] as const;
 
 export default function TaskList({
+    project_id,
     tasks,
     onEdit,
     onDelete,
@@ -40,7 +42,6 @@ export default function TaskList({
             </div>
         );
     }
-
     return (
         <div className="flex flex-col gap-10">
 
@@ -50,7 +51,7 @@ export default function TaskList({
                     (task) => task.status === status.value
                 );
 
-                return (
+                return statusTasks.length > 0 && (
                     <section key={status.value}>
 
                         <div className="mb-4 flex items-center justify-between">
@@ -87,7 +88,7 @@ export default function TaskList({
                                     >
                                         <div className="min-w-0">
                                             <h3 className="font-semibold text-white truncate">
-                                                <Link href={`/tasks/${task._id}`}>
+                                                <Link href={`/tasks/${task._id}?project_id=${encodeURIComponent(project_id)}`}>
                                                     {task.title}
                                                 </Link>
                                             </h3>
@@ -146,6 +147,7 @@ export default function TaskList({
                             >
                                 {statusTasks.map((task) => (
                                     <TaskCard
+                                        project_id={project_id}
                                         key={task._id}
                                         task={task}
                                         onEdit={onEdit}

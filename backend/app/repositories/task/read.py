@@ -11,12 +11,13 @@ class TaskReadRepository:
     # ==============================
     # ADMIN/PUBLIC
     # ==============================
-    
+
     async def get_all(
-        self
+        self,
+        project_id: str
     ) -> list[dict]:
 
-        cursor = get_tasks_collection().find()
+        cursor = get_tasks_collection().find({"project_id": project_id})
 
         tasks = []
 
@@ -36,14 +37,16 @@ class TaskReadRepository:
 
     async def get_by_id(
         self,
-        task_id: str
+        task_id: str,
+        project_id: str
     ) -> dict | None:
 
         try:
 
             task = await get_tasks_collection().find_one(
                 {
-                    "_id": ObjectId(task_id)
+                    "_id": ObjectId(task_id),
+                    "project_id": project_id
                 }
             )
 
@@ -65,15 +68,17 @@ class TaskReadRepository:
     # ==============================
     # OWNER
     # ==============================
-    
+
     async def get_user_tasks(
         self,
-        user_id: str
+        user_id: str,
+        project_id: str
     ) -> list[dict]:
 
         cursor = get_tasks_collection().find(
             {
-                "user_id": user_id
+                "user_id": user_id,
+                "project_id": project_id
             }
         )
 
@@ -96,7 +101,8 @@ class TaskReadRepository:
     async def get_user_task_by_id(
         self,
         task_id: str,
-        user_id: str
+        user_id: str,
+        project_id: str
     ) -> dict | None:
 
         try:
@@ -104,7 +110,8 @@ class TaskReadRepository:
             task = await get_tasks_collection().find_one(
                 {
                     "_id": ObjectId(task_id),
-                    "user_id": user_id
+                    "user_id": user_id,
+                    "project_id": project_id
                 }
             )
 

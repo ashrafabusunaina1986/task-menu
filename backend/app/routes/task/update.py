@@ -20,6 +20,7 @@ router = APIRouter()
 @router.put("/{task_id}")
 async def update_task(
     task_id: str,
+    project_id: str,
     task: TaskUpdate,
     service: TaskService = Depends(get_task_service),
     user: User = Depends(get_current_user_dependency),
@@ -34,5 +35,6 @@ async def update_task(
         user=user,
         data=task.model_dump(
             exclude_none=True
-        )
+        ),
+        project_id=project_id
     )

@@ -13,3 +13,10 @@ class Permission(StrEnum):
     TASKS_READ = "tasks:read"
     TASKS_UPDATE = "tasks:update"
     TASKS_DELETE = "tasks:delete"
+
+    PROJECTS_CREATE = "projects:create"
+    PROJECTS_READ = "projects:read"
+    PROJECTS_UPDATE = "projects:update"
+    PROJECTS_DELETE = "projects:delete"
+    PROJECTS_ASSIGN_OWNER = "projects:assign_owner"
+    PROJECTS_CREATE_UNASSIGNED = "projects:create_unassigned"

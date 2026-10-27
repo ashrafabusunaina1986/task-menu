@@ -59,18 +59,21 @@ async function serverFetch<T>(
 // TASKS
 // ===============================================
 
-export function getTasks() {
+export function getTasks(
+    project_id: string
+) {
     return serverFetch<Task[]>(
-        "/tasks/"
+        `/tasks?project_id=${encodeURIComponent(project_id)}`
     );
 }
 
 
 export function getTask(
-    id: string
+    task_id: string,
+    project_id: string
 ) {
     return serverFetch<Task>(
-        `/tasks/${id}`
+        `/tasks/task?task_id=${encodeURIComponent(task_id)}&project_id=${encodeURIComponent(project_id)}`
     );
 }
 

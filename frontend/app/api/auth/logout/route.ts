@@ -30,11 +30,6 @@ export async function POST() {
                 )
             }
         )
-
-        console.log("LOGOUT BACKEND RESPONSE:", {
-            status: response.status,
-            ok: response.ok,
-        })
     }
 
 

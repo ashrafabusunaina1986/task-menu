@@ -26,3 +26,4 @@ venv/
 .DS_Store
 create_init.py
 create_init2.py
+readme

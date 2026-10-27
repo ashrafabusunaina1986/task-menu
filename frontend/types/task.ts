@@ -2,7 +2,7 @@
 
 export type TaskStatus =
     | "todo"
-    | "in-progress"
+    | "in_progress"
     | "done";
 
 

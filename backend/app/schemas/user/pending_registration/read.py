@@ -5,4 +5,5 @@ from pydantic import BaseModel
 
 class PendingRegisterRead(BaseModel):
 
-    register_id: str
+    register_id: str | None = None
+    email: str | None = None

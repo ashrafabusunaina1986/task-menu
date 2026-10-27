@@ -1,7 +1,7 @@
 // app/tasks/[id]/page.tsx
 
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { getTask } from "@/lib/server_api";
 import { Task } from "@/types/task";
@@ -11,18 +11,27 @@ interface TaskPageProps {
     params: Promise<{
         id: string;
     }>;
+    searchParams: Promise<{
+        project_id?: string
+    }>
 }
 
 export default async function TaskPage({
-    params,
+    params, searchParams
 }: TaskPageProps) {
 
     const { id } = await params;
+    const { project_id } = await searchParams
+
+    if (!project_id) {
+        return redirect("/project")
+    }
 
     let task: Task;
 
     try {
-        task = await getTask(id);
+        task = await getTask(id, project_id);
+        console.log(task)
     } catch (error) {
         console.error(error);
         notFound();
@@ -118,7 +127,7 @@ export default async function TaskPage({
                             </h2>
 
                             <p className="mt-2 text-white">
-                                {<LocalDate date={task.created_at} />}
+                                <LocalDate date={task.created_at} />
                             </p>
                         </div>
 
@@ -128,7 +137,7 @@ export default async function TaskPage({
                             </h2>
 
                             <p className="mt-2 text-white">
-                                {<LocalDate date={task.updated_at} />}
+                                <LocalDate date={task.updated_at} />
                             </p>
                         </div>
 
@@ -139,7 +148,7 @@ export default async function TaskPage({
                 <div className="mt-10 flex flex-wrap gap-4">
 
                     <Link
-                        href={`/tasks/edit/${task._id}`}
+                        href={`/tasks/edit/${task._id}?project_id=${encodeURIComponent(project_id)}`}
                         className="
                             px-6
                             py-3
@@ -158,7 +167,7 @@ export default async function TaskPage({
                     </Link>
 
                     <Link
-                        href="/tasks"
+                        href={`/project/${encodeURIComponent(project_id)}`}
                         className="
                             px-6
                             py-3
@@ -171,7 +180,7 @@ export default async function TaskPage({
                             transition
                         "
                     >
-                        Back
+                        Back to project
                     </Link>
 
                 </div>

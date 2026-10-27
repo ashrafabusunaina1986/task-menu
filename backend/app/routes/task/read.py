@@ -1,6 +1,6 @@
 # app/routes/task/read.py
 
-from fastapi import APIRouter,Depends
+from fastapi import APIRouter, Depends
 
 from app.schemas.task_schema import TaskResponse
 from app.services.task.service import TaskService
@@ -22,6 +22,7 @@ router = APIRouter()
     response_model=list[TaskResponse]
 )
 async def get_tasks(
+    project_id: str,
     service: TaskService = Depends(get_task_service),
     user: User = Depends(get_current_user_dependency),
     security: DependencyService = Depends(get_security_service)
@@ -31,25 +32,26 @@ async def get_tasks(
         permission=Permission.TASKS_READ
     )
     return await service.get_all(
-        user=user
+        user=user, project_id=project_id
     )
 
 
 @router.get(
-    "/{task_id}",
+    "/task",
     response_model=TaskResponse
 )
 async def get_task(
     task_id: str,
+    project_id: str,
     service: TaskService = Depends(get_task_service),
     user: User = Depends(get_current_user_dependency),
     security: DependencyService = Depends(get_security_service)
 ):
     security.require_permission_dependency.require_permission(
-          user=user,
-          permission=Permission.TASKS_READ
-    )  
+        user=user,
+        permission=Permission.TASKS_READ
+    )
     return await service.get_by_id(
         task_id=task_id,
-        user=user
+        user=user, project_id=project_id
     )

@@ -75,6 +75,15 @@ from app.core.container.security_attempts import (
 from app.core.container.resend_otp_security_status import (
     get_resend_otp_security_status_service
 )
+from app.services.user.pending_registration.service import (
+    PendingRegisterService
+)
+from app.core.container.pending_registration import (
+    get_pending_register_service
+)
+from app.schemas.user.pending_registration.read import (
+    PendingRegisterRead
+)
 
 router = APIRouter()
 
@@ -138,7 +147,10 @@ async def resend_otp(
     ),
     security_attempts_security_service: SecurityAttemptsSecurityService = Depends(
         get_security_attempts_security_service
-    )
+    ),
+    pending_register_service: PendingRegisterService = Depends(
+        get_pending_register_service
+    ),
 ):
     ip_id = request.headers.get(
         "CF-Connecting-IP"
@@ -158,10 +170,15 @@ async def resend_otp(
             detail="Device id is required"
         )
 
+    pending_register = await pending_register_service.get_pending_register(
+        data=PendingRegisterRead(
+            email=data.email
+        )
+    )
     user = await user_service.get_by_email(
         email=data.email
     )
-    if not user:
+    if not user or pending_register:
         return {
             "success": True,
             "message": "If the account exists and can receive an OTP, an OTP has been sent."
@@ -288,5 +305,5 @@ async def resend_otp(
     )
     return {
         "success": True,
-        "message": "OTP resent successfully"
+        "message": "If the account exists and can receive an OTP, an OTP has been sent."
     }

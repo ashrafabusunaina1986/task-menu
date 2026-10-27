@@ -122,7 +122,7 @@ async def register(
     if user:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="User already exista"
+            detail="User already exist"
         )
     ip_id = request.headers.get(
         "CF-Connecting-IP"
@@ -157,7 +157,7 @@ async def register(
             detail=RegisterBlockedResponse(
                 reason="The user is blocked",
                 blocked_until=user_block.blocked_until.isoformat()
-            )
+            ).model_dump(mode='json')
         )
 
     create_pending_register = await pending_register_service.create(
@@ -263,6 +263,7 @@ async def verify_register(
         token=data.register_token,
         token_type=TokenTypes.REGISTER
     )
+
     register_id = valid_token["sub"]
     user_block = await user_block_service.get_active_block(
         data=UserBlockRead(
@@ -279,7 +280,14 @@ async def verify_register(
                 blocked_until=user_block.blocked_until.isoformat()
             ).model_dump(mode="json")
         )
-
+    user = await user_service.get_by_email(
+        email=valid_token["email"]
+    )
+    if user:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="User already exist"
+        )
     result = await otp_service.verify(
         register_id=register_id,
         otp=data.otp

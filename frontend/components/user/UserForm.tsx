@@ -105,7 +105,7 @@ export default function UserForm<T extends CreateUser | UpdateUser>(
                 />
                 {
                     errors.name && (
-                        <p className="mt-1 text-sm text-red-400">
+                        <p className="mt-1 text-sm text-red-400 whitespace-normal">
                             {errors.name[0]}
                         </p>
                     )
@@ -124,7 +124,7 @@ export default function UserForm<T extends CreateUser | UpdateUser>(
                 />
                 {
                     errors.email && (
-                        <p className="mt-1 text-sm text-red-400">
+                        <p className="mt-1 text-sm text-red-400 whitespace-normal">
                             {errors.email[0]}
                         </p>
                     )
@@ -175,7 +175,7 @@ export default function UserForm<T extends CreateUser | UpdateUser>(
                 </div>
                 {
                     errors.password && (
-                        <p className="mt-1 text-sm text-red-400">
+                        <p className="mt-1 text-sm text-red-400 whitespace-normal">
                             {errors.password[0]}
                         </p>
                     )

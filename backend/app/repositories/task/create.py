@@ -1,6 +1,7 @@
 # app/repositories/task/create.py
 
-from datetime import datetime
+
+from app.models.task import Task
 
 from app.core.database import get_tasks_collection
 
@@ -9,16 +10,13 @@ class TaskCreateRepository:
 
     async def create(
         self,
-        task_data: dict
+        task_data: Task
     ) -> str:
-
-        now = datetime.utcnow()
-
-        task_data["created_at"] = now
-        task_data["updated_at"] = now
-
-        result = await get_tasks_collection().insert_one(
-            task_data
+        data_model = task_data.model_dump(
+            by_alias=True
         )
+        data_model.pop("_id", None)
+
+        result = await get_tasks_collection().insert_one(data_model)
 
         return str(result.inserted_id)
