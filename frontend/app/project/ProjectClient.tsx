@@ -1,4 +1,3 @@
-// app/project/ProjectClient.tsx
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -31,6 +30,7 @@ interface ProjectClientProps {
         role?: Role | null
     };
 }
+
 type OwnerRoleFilter =
     | "all"
     | "admin"
@@ -50,10 +50,7 @@ const ownerRoleOptions: {
         { label: "Without Owner", value: "no_owner" },
         { label: "Unknown Role", value: "unknown" },
     ];
-/**
- * The backend returns MongoDB documents containing _id.
- * The frontend uses id for project navigation and actions.
- */
+
 type ProjectApiResponse = Project & {
     _id?: string;
     id?: string;
@@ -87,12 +84,12 @@ export default function ProjectClient({
     const [error, setError] = useState<string | null>(null);
 
     const [viewMode, setViewMode] = useState<ViewMode>("card");
-    const [selectedStatus, setSelectedStatus] =
-        useState<StatusFilter>("all");
+    const [selectedStatus, setSelectedStatus] = useState<StatusFilter>("all");
     const [search, setSearch] = useState("");
-    const [selectedOwnerRole, setSelectedOwnerRole] =
-        useState<OwnerRoleFilter>("all");
-    const isAdmin = user.role === 'admin'
+    const [selectedOwnerRole, setSelectedOwnerRole] = useState<OwnerRoleFilter>("all");
+
+    const isAdmin = user.role === 'admin';
+
     const loadProjects = useCallback(async () => {
         setLoading(true);
         setError(null);
@@ -120,6 +117,7 @@ export default function ProjectClient({
     useEffect(() => {
         void loadProjects();
     }, [loadProjects]);
+
     const filteredProjects = useMemo(() => {
         const query = search.trim().toLowerCase();
 
@@ -128,7 +126,6 @@ export default function ProjectClient({
                 selectedStatus === "all" ||
                 project.status === selectedStatus;
 
-            // تم الإصلاح: البحث سيعمل الآن للجميع (الآدمن والمستخدم العادي)
             const matchesSearch =
                 query === "" ||
                 project.name.toLowerCase().includes(query) ||
@@ -162,7 +159,6 @@ export default function ProjectClient({
         });
     }, [projects, selectedStatus, selectedOwnerRole, search, isAdmin]);
 
-
     const projectGroups = useMemo(() => {
         if (!isAdmin) return [];
 
@@ -175,7 +171,7 @@ export default function ProjectClient({
         };
 
         filteredProjects.forEach((project) => {
-            if (project.owner_id === null) {
+            if (project.owner_id == null) {
                 groups["Projects Without Owner"].push(project);
             } else if (!project.owner_role) {
                 groups["Unknown Owner Role"].push(project);
@@ -194,21 +190,16 @@ export default function ProjectClient({
         }));
     }, [isAdmin, filteredProjects]);
 
-    // Navigate to the dedicated project creation page.
     function handleCreate() {
         router.push("/project/create");
     }
 
-    // Navigate to the dedicated project editing page.
     function handleEdit(projectId: string) {
         if (!projectId) {
             setError("Project ID is missing.");
             return;
         }
-
-        router.push(
-            `/project/edit/${encodeURIComponent(projectId)}`
-        );
+        router.push(`/project/edit/${encodeURIComponent(projectId)}`);
     }
 
     async function handleDelete(projectId: string) {
@@ -254,10 +245,9 @@ export default function ProjectClient({
             );
         }
     }
-
     return (
         <div className="min-h-screen bg-[#08080d] text-white">
-            {/* Background */}
+            {/* Background Animations */}
             <div className="pointer-events-none fixed inset-0 overflow-hidden">
                 <div className="absolute -top-40 left-1/4 h-96 w-96 rounded-full bg-violet-700/10 blur-[140px]" />
                 <div className="absolute right-0 top-1/3 h-80 w-80 rounded-full bg-purple-600/10 blur-[130px]" />
@@ -266,253 +256,108 @@ export default function ProjectClient({
             <div className="relative z-10">
                 <UserHeader user={user} />
 
-                <main className="mx-auto w-[90%] max-w-6xl py-10">
-                    {/* Page heading and create action */}
-                    <div className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
-                        <div>
-                            <p className="mb-2 text-sm text-violet-300">
-                                Workspace
-                            </p>
+                {/* هيكل التحكم والتصفية والفلترة التفاعلية للمشاريع */}
+                <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+                    <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-[#11111a] p-4 rounded-xl border border-gray-800/60 shadow-xl">
+                        <div className="flex flex-wrap gap-3 w-full sm:w-auto">
+                            <input
+                                type="text"
+                                placeholder="Search projects by name..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="bg-[#161622] border border-gray-700/70 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-purple-500 w-full sm:w-64 text-white placeholder-gray-500 transition"
+                            />
 
-                            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                                Projects
-                            </h1>
-
-                            <p className="mt-2 text-sm text-gray-400">
-                                Manage and organize your projects.
-                            </p>
-                        </div>
-
-                        <button
-                            type="button"
-                            onClick={handleCreate}
-                            className="rounded-xl bg-violet-600 px-5 py-3 font-medium transition hover:bg-violet-500"
-                        >
-                            + Create Project
-                        </button>
-                    </div>
-
-                    {/* Project statistics */}
-                    <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3">
-                        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                            <p className="text-sm text-gray-400">
-                                Total Projects
-                            </p>
-
-                            <p className="mt-2 text-3xl font-semibold">
-                                {projects.length}
-                            </p>
-                        </div>
-
-                        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                            <p className="text-sm text-gray-400">
-                                In Progress
-                            </p>
-
-                            <p className="mt-2 text-3xl font-semibold text-violet-300">
-                                {
-                                    projects.filter(
-                                        (project) =>
-                                            project.status === "in_progress"
-                                    ).length
-                                }
-                            </p>
-                        </div>
-
-                        <div className="col-span-2 rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:col-span-1">
-                            <p className="text-sm text-gray-400">
-                                Completed
-                            </p>
-
-                            <p className="mt-2 text-3xl font-semibold text-emerald-300">
-                                {
-                                    projects.filter(
-                                        (project) =>
-                                            project.status === "completed"
-                                    ).length
-                                }
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Error message */}
-                    {error && (
-                        <div
-                            role="alert"
-                            className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300"
-                        >
-                            <span>{error}</span>
-
-                            <button
-                                type="button"
-                                onClick={() => setError(null)}
-                                className="shrink-0 text-white"
+                            <select
+                                value={selectedStatus}
+                                onChange={(e) => setSelectedStatus(e.target.value as StatusFilter)}
+                                className="bg-[#161622] border border-gray-700/70 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500 text-gray-300 cursor-pointer"
                             >
-                                Dismiss
-                            </button>
-                        </div>
-                    )}
+                                {statusOptions.map((opt) => (
+                                    <option key={opt.value} value={opt.value} className="bg-[#11111a]">{opt.label}</option>
+                                ))}
+                            </select>
 
-                    {/* Search and view mode */}
-                    <div className="mb-5 flex flex-col gap-4 md:flex-row">
-                        <input
-                            type="search"
-                            value={search}
-                            onChange={(event) =>
-                                setSearch(event.target.value)
-                            }
-                            placeholder="Search projects..."
-                            aria-label="Search projects"
-                            className="min-w-0 flex-1 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 outline-none transition placeholder:text-gray-500 focus:border-violet-500"
-                        />
-
-                        <div className="flex rounded-xl border border-white/10 bg-white/[0.03] p-1">
-                            <button
-                                type="button"
-                                onClick={() => setViewMode("card")}
-                                aria-pressed={viewMode === "card"}
-                                className={`rounded-lg px-4 py-2 text-sm transition ${viewMode === "card"
-                                    ? "bg-violet-600 text-white"
-                                    : "text-gray-400 hover:text-white"
-                                    }`}
-                            >
-                                Cards
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => setViewMode("menu")}
-                                aria-pressed={viewMode === "menu"}
-                                className={`rounded-lg px-4 py-2 text-sm transition ${viewMode === "menu"
-                                    ? "bg-violet-600 text-white"
-                                    : "text-gray-400 hover:text-white"
-                                    }`}
-                            >
-                                List
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Status filters */}
-                    <div className="mb-4 flex gap-2 overflow-x-auto pb-2">
-                        {statusOptions.map((option) => {
-                            const count =
-                                option.value === "all"
-                                    ? projects.length
-                                    : projects.filter(
-                                        (project) =>
-                                            project.status === option.value
-                                    ).length;
-
-                            return (
-                                <button
-                                    key={option.value}
-                                    type="button"
-                                    onClick={() =>
-                                        setSelectedStatus(option.value)
-                                    }
-                                    aria-pressed={
-                                        selectedStatus === option.value
-                                    }
-                                    className={`shrink-0 rounded-full border px-4 py-2 text-sm transition ${selectedStatus === option.value
-                                        ? "border-violet-500 bg-violet-600/20 text-violet-200"
-                                        : "border-white/10 text-gray-400 hover:border-white/20 hover:text-white"
-                                        }`}
+                            {isAdmin && (
+                                <select
+                                    value={selectedOwnerRole}
+                                    onChange={(e) => setSelectedOwnerRole(e.target.value as OwnerRoleFilter)}
+                                    className="bg-[#161622] border border-gray-700/70 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500 text-gray-300 cursor-pointer"
                                 >
-                                    {option.label} ({count})
+                                    {ownerRoleOptions.map((opt) => (
+                                        <option key={opt.value} value={opt.value} className="bg-[#11111a]">{opt.label}</option>
+                                    ))}
+                                </select>
+                            )}
+                        </div>
+
+                        <div className="flex gap-4 w-full sm:w-auto justify-between sm:justify-end items-center">
+                            <div className="bg-[#161622] p-1 rounded-lg flex border border-gray-700/60">
+                                <button
+                                    onClick={() => setViewMode("card")}
+                                    className={`px-3 py-1.5 text-xs font-medium rounded-md transition ${viewMode === "card" ? "bg-purple-600 text-white shadow-md" : "text-gray-400 hover:text-white"}`}
+                                >
+                                    Cards
                                 </button>
-                            );
-                        })}
+                                <button
+                                    onClick={() => setViewMode("menu")}
+                                    className={`px-3 py-1.5 text-xs font-medium rounded-md transition ${viewMode === "menu" ? "bg-purple-600 text-white shadow-md" : "text-gray-400 hover:text-white"}`}
+                                >
+                                    List
+                                </button>
+                            </div>
+
+                            <button
+                                onClick={handleCreate}
+                                className="bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-lg shadow-purple-600/20 transition duration-150"
+                            >
+                                + Create Project
+                            </button>
+                        </div>
                     </div>
 
-                    {/* Owner role filters — Admin only */}
-                    {isAdmin && (
-                        <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
-                            {ownerRoleOptions.map((option) => {
-                                const count = projects.filter((project) => {
-                                    switch (option.value) {
-                                        case "all":
-                                            return true;
-                                        case "admin":
-                                        case "manager":
-                                        case "user":
-                                            return (
-                                                project.owner_id != null &&
-                                                project.owner_role === option.value
-                                            );
-                                        case "no_owner":
-                                            return project.owner_id == null;
-                                        case "unknown":
-                                            return (
-                                                project.owner_id != null &&
-                                                !project.owner_role
-                                            );
-                                    }
-                                }).length;
-
-                                return (
-                                    <button
-                                        key={option.value}
-                                        type="button"
-                                        onClick={() =>
-                                            setSelectedOwnerRole(option.value)
-                                        }
-                                        aria-pressed={
-                                            selectedOwnerRole === option.value
-                                        }
-                                        className={`shrink-0 rounded-full border px-4 py-2 text-sm transition ${selectedOwnerRole === option.value
-                                            ? "border-violet-500 bg-violet-600/20 text-violet-200"
-                                            : "border-white/10 text-gray-400 hover:border-white/20 hover:text-white"
-                                            }`}
-                                    >
-                                        {option.label} ({count})
-                                    </button>
-                                );
-                            })}
+                    {error && (
+                        <div className="bg-red-950/40 border border-red-800 text-red-200 p-4 rounded-xl text-sm font-medium animate-pulse">
+                            {error}
                         </div>
                     )}
 
-
-                    {/* Project list */}
+                    {/* رندر قوائم المشاريع بناءً على الصلاحيات والأدوار المخصصة */}
                     {loading ? (
-                        <div className="rounded-2xl border border-white/10 bg-white/[0.02] py-20 text-center text-gray-400">
-                            Loading projects...
+                        <div className="flex justify-center items-center py-24">
+                            <div className="animate-spin rounded-full h-9 w-9 border-t-2 border-b-2 border-purple-500"></div>
                         </div>
-                    ) : isAdmin ? (
-                        projectGroups.map((group) => (
-                            group.projects.length > 0 && (
-                                <div key={group.title} className="mb-8">
-                                    <h2 className="mb-4 text-xl font-semibold">
-                                        {group.title}
-                                        <span className="ml-2 text-sm text-gray-400">
-                                            ({group.projects.length})
-                                        </span>
-                                    </h2>
-
-                                    <ProjectList
-                                        projects={group.projects}
-                                        onEdit={handleEdit}
-                                        onDelete={(id) => void handleDelete(id)}
-                                        viewMode={viewMode}
-                                    />
-                                </div>
-                            )
-                        ))
-                    ) : (
+                    ) : !isAdmin ? (
                         <ProjectList
                             projects={filteredProjects}
-                            onEdit={handleEdit}
-                            onDelete={(id) => void handleDelete(id)}
                             viewMode={viewMode}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
                         />
-                    )}
-
-
-                    {!loading && filteredProjects.length > 0 && (
-                        <p className="mt-5 text-sm text-gray-500">
-                            Showing {filteredProjects.length} of{" "}
-                            {projects.length} projects
-                        </p>
+                    ) : (
+                        <div className="space-y-8">
+                            {projectGroups.map((group) => (
+                                group.projects.length > 0 && (
+                                    <div key={group.title} className="space-y-4">
+                                        <h3 className="text-md font-bold text-gray-400 flex items-center gap-2 uppercase tracking-wider">
+                                            <span className="h-2 w-2 rounded-full bg-purple-500 shadow-md shadow-purple-500/50"></span>
+                                            {group.title} ({group.projects.length})
+                                        </h3>
+                                        <ProjectList
+                                            projects={group.projects}
+                                            viewMode={viewMode}
+                                            onEdit={handleEdit}
+                                            onDelete={handleDelete}
+                                        />
+                                    </div>
+                                )
+                            ))}
+                            {filteredProjects.length === 0 && (
+                                <div className="text-center py-20 text-gray-500 text-sm border border-dashed border-gray-800 rounded-2xl bg-[#0b0b12]">
+                                    No infrastructure projects match your selected filter criteria.
+                                </div>
+                            )}
+                        </div>
                     )}
                 </main>
             </div>
