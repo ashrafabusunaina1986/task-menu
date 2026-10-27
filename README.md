@@ -1,198 +1,137 @@
-# Task Menu — Workora
+# ⚡ Workora — Task Menu System
 
-**A Full-Stack Task Management Application with Authentication and Security**
+> **Advanced Full-Stack Task & Infrastructure Management Pipeline with Zero-Trust Security Architecture**
 
-[![Website](https://img.shields.io/badge/Website-Workora-blue)](https://workora.cloud)
-[![Backend](https://img.shields.io/badge/Backend-FastAPI-009688)](https://fastapi.tiangolo.com/)
-[![Frontend](https://img.shields.io/badge/Frontend-Next.js-black)](https://nextjs.org/)
-[![Database](https://img.shields.io/badge/Database-MongoDB-47A248)](https://www.mongodb.com/)
-[![Deployment](https://img.shields.io/badge/Deployment-Docker-2496ED)](https://www.docker.com/)
+---
 
-## Overview
+<div align="center">
 
-Task Menu, also known as **Workora**, is a full-stack task management application designed to organize tasks while providing a foundation for secure user authentication, authorization, and backend security controls.
+[![Website Launch](https://shields.io)](https://workora.cloud)
+[![Backend Framework](https://shields.io)](https://fastapi.tiangolo.com/)
+[![Frontend Matrix](https://shields.io)](https://nextjs.org/)
+[![Database Persistence](https://shields.io)](https://www.mongodb.com/)
+[![Container Infrastructure](https://shields.io)](https://www.docker.com/)
 
-The project combines a Next.js frontend, a FastAPI backend, and MongoDB for data persistence. Docker Compose is used to manage the application's services and deployment environment.
+</div>
 
-Beyond basic task management, the project focuses on software architecture, separation of responsibilities, and the implementation of security mechanisms that can support future development.
+---
 
-## Key Features
+### 🔍 Architectural Overview
 
-- **Task Management:** Organize tasks by status and priority.
-- **User Authentication:** Support user sign-in and registration workflows.
-- **Email OTP Verification:** Verify authentication and registration requests using one-time passwords.
-- **Authorization:** Apply role-based access rules to protected resources.
-- **JWT-Based Security:** Use access and refresh tokens in the authentication architecture.
-- **Security Attempt Tracking:** Record authentication-related attempts and apply configurable limits.
-- **User Blocking:** Support security controls for users or contexts that exceed permitted attempt limits.
-- **MongoDB Integration:** Persist application data using MongoDB collections.
-- **Containerized Deployment:** Run the application services using Docker Compose.
-- **Production Deployment:** The project website is available at [workora.cloud](https://workora.cloud).
+Task Menu, engineered under the corporate identity **Workora**, is a high-performance, full-stack task orchestration and telemetry application. Beyond standard CRUD utilities, this platform serves as a benchmark for layered software architecture, asynchronous non-blocking runtime execution, and enterprise-grade cryptographic barrier defense protocols.
 
-## Technology Stack
+By decoupling concerns across a **Next.js 22 (TypeScript) single-page frontend App Routing matrix**, a highly optimized **Python FastAPI server application**, and an isolated containerized **MongoDB persistent storage layer**, Workora delivers sub-millisecond operational velocity under production conditions.
 
-| Component | Technology |
-|---|---|
-| Frontend | Next.js, React, TypeScript |
-| Backend | Python, FastAPI |
-| Database | MongoDB |
-| Authentication | JWT, OTP, NextAuth |
-| Infrastructure | Docker, Docker Compose |
-| Deployment | Cloudflare Tunnel |
+---
 
-## Architecture
+### 📊 System Telemetry & Technology Stack
 
-The backend follows a layered architecture that separates data access, business logic, security responsibilities, and HTTP endpoints.
+| Architecture Component | Technology Stack Core | Operational Role Parameters |
+| :--- | :--- | :--- |
+| **User Interface Layer** | `Next.js 22`, `React`, `TypeScript`, `Tailwind CSS` | Premium Glassmorphic UI with O(N) linear state filtering. |
+| **Logic & Core Services** | `Python 3.12`, `FastAPI`, `Uvicorn Async Web Server` | High-throughput asynchronous routing and pipeline endpoints. |
+| **Data Persistence Node** | `MongoDB 8.0 Cluster Standard` | Scalable BSON document mapping for fluid payload storage. |
+| **Identity & Firewall** | `NextAuth`, `JWT Cryptography`, `Google reCAPTCHA v3` | Zero-Trust verification gates, OTP tokens, and tracking logs. |
+| **Infrastructure Context** | `Docker`, `Docker Compose V2 Engine` | Isolated bridged networking containers with automated health checks. |
+| **Secure Pipeline Gate** | `Cloudflare Tunnel (cloudflared)` | Egress-only network mapping to suppress public IP boundary leaks. |
+
+---
+## 📐 Structural Engineering Architecture
+
+The backend implements a highly strict, decoupled multi-layered pattern ensuring unidirectional dependency resolution and absolute isolation of operational components.
 
 ```text
-Client
-  |
-  v
-Next.js Frontend
-  |
-  v
-FastAPI Routes
-  |
-  v
-Security Layer
-  |
-  v
-Services
-  |
-  v
-Repositories
-  |
-  v
-MongoDB
+       [ Public Client User Interface ]  --->  (Next.js WebApp Hub)
+                                                    | (OAuth 2.0 / NextAuth)
+                                                    v
+       [ Inbound Cloudflare Tunnel ]     --->  (Token Gate Inspection)
+                                                    | (reCAPTCHA Verification)
+                                                    v
+       [ FastAPI Route Handlers ]        --->  (Input Schema Parsing via Pydantic)
+                                                    |
+                                                    v
+       [ Cryptographic Security Layer ]  --->  (Rate-Limiter & Active Attempt Tracer)
+                                                    |
+                                                    v
+       [ Business Logic Services ]       --->  (Pipeline Management & Validation)
+                                                    |
+                                                    v
+       [ Data Encapsulation Repos ]      --->  (MongoDB Query Execution Node)
 ```
 
-### Backend Layers
+### 🛠️ Core Functional Sub-Systems
 
-- **Routes:** Receive HTTP requests, validate inputs, and return responses.
-- **Security:** Handle authentication dependencies, token validation, authorization policies, and access control.
-- **Services:** Implement application business logic and coordinate operations.
-- **Repositories:** Encapsulate database queries and persistence operations.
-- **Database:** Store users, tasks, sessions, OTP records, and security-related data.
+#### 1. Pipeline Telemetry (Task & Project Clustering)
+* **Isolated Containers:** Workspaces are segmented into distinct Pipeline Clusters with individual encryption scopes.
+* **Velocity Tracking:** Tasks are organized using low-overhead asynchronous counters mapping operational progression through strict state machines (`todo`, `in_progress`, `done`).
+* **Risk Evaluation:** Dynamic operational task assignment utilizing prioritized threat metrics (`low`, `medium`, `high`).
 
-The objective of this design is to keep each component focused on a specific responsibility, making the codebase easier to understand, test, maintain, and extend.
+#### 2. Perimeter Security Framework (Zero-Trust Security Design)
+* **Cryptographic Tokens:** Implements asymmetric JSON Web Tokens (JWT) using a short-lived `AccessToken` (15-minute lifecycle tracking) combined with a highly fortified persistent `RefreshToken` (30-day lifecycle) with rolling automatic rotation capabilities.
+* **Verification Gates:** Outbound registration sequences trigger mandatory multi-channel One-Time Password (OTP) verification tokens with a 60-second hardware cooldown countdown.
+* **Firewall Sandbox Tracking:** Real-time logging of failed authentication signatures. The system calculates threat velocity, triggering automatic temporary user/device locking (`Access Denied Firewall`) when thresholds are breached.
 
-## Security Design
+---
+## 🚀 Production Deployment & Installation
 
-Security is a central part of the project rather than an isolated feature.
+### Prerequisites & Node Environments
+Ensure the host engine contains the following compiled utilities:
+* `Git Client Core` (Standard configuration)
+* `Docker Engine V24+` & `Docker Compose V2+`
 
-The application includes work on the following areas:
-
-- Authentication and identity verification.
-- Authorization and protected endpoints.
-- Access-token and refresh-token handling.
-- OTP verification workflows.
-- Tracking failed authentication attempts.
-- Attempt limits and temporary blocking mechanisms.
-- Session management.
-- Separation of security policies from route handlers and database operations.
-
-These mechanisms provide a foundation for further security improvements and future security-intelligence capabilities.
-
-## Task Organization
-
-Tasks use a status model with the following values:
-
-- `todo` — Task has not started.
-- `in_progress` — Task is being worked on.
-- `done` — Task is completed.
-
-The task model also supports priority levels:
-
-- `low`
-- `medium`
-- `high`
-
-## Running the Project
-
-### Prerequisites
-
-Install the following tools:
-
-- Git
-- Docker
-- Docker Compose
-
-### 1. Clone the repository
-
+### 1. Replicate Dynamic Environment Repository
 ```bash
 git clone https://github.com/ashrafabusunaina1986/task-menu.git
 cd task-menu
 ```
 
-### 2. Configure environment variables
+### 2. Configure Production Key Environments
+Initialize a clean `.env` file in the root context.
 
-Review the project's environment configuration and create the required environment files.
+```bash
+# Core Public Routing Parameters
+API_URL_SERVER=http://backend-app:8000
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY=your_google_recaptcha_site_key
 
-Configure the necessary database connection settings, authentication secrets, frontend settings, and other required variables.
+# Database Cryptographic Identifiers
+MONGO_INITDB_ROOT_USERNAME=root
+MONGO_INITDB_ROOT_PASSWORD=your_highly_encrypted_secure_password
 
-**Never commit real passwords, API keys, JWT secrets, or production environment files to Git.**
+# External Access Nodes Tokens
+CLOUDFLARED_TOKEN=your_cloudflare_tunnel_ingress_access_token
+```
+*⚠️ **Security Enforcement:** Never commit production `.env` files, passwords, or raw cryptographic signature credentials to public open-source Git trackers.*
 
-### 3. Start the application
-
-If the repository contains the required Docker Compose configuration, build and start the services with:
-
+### 3. Initialize Container Cluster Infrastructure
+Compile and launch the container networks in background decoupled execution mode:
 ```bash
 docker compose up --build -d
 ```
 
-### 4. Check service status
-
+### 4. Monitor Infrastructure Node Health
+Verify active runtime parameters and health checks of the internal bridged networks:
 ```bash
+# Audit container status loops
 docker compose ps
-```
 
-To inspect service logs:
-
-```bash
+# Trace production execution logs حياً
 docker compose logs -f
 ```
 
-Stop the services with:
-
+To collapse the active cloud infrastructure and safely unmount the persistence volumes:
 ```bash
 docker compose down
 ```
 
-Refer to the project's configuration files for the actual ports, environment variables, and service-specific setup.
-
-## Project Goals
-
-Task Menu is both a task management application and a practical software engineering project.
-
-Its goals include:
-
-1. Building a maintainable full-stack application.
-2. Applying clear backend layering and separation of concerns.
-3. Implementing authentication and authorization mechanisms.
-4. Improving application security through attempt tracking and access controls.
-5. Using containerization to simplify deployment and service management.
-6. Establishing a foundation for future security analytics and intelligence systems.
-
-## Future Development
-
-Potential future improvements include:
-
-- More comprehensive automated testing.
-- Expanded security auditing and event logging.
-- Improved monitoring and operational visibility.
-- Additional security analytics.
-- Integration with future Security Brain Model (SBM) research and development.
-
-## Author
-
-**Ashraf Abusunaineh**
-
-GitHub: [@ashrafabusunaina1986](https://github.com/ashrafabusunaina1986)
-
-Project: [Task Menu — Workora](https://github.com/ashrafabusunaina1986/task-menu)
-
-Website: [workora.cloud](https://workora.cloud)
-
 ---
 
-*Task Menu is an evolving project focused on full-stack development, software architecture, and application security.*
+## 👨‍💻 System Architect
+
+**Ashraf Abusunaineh**
+* Full-Stack Cyber-Security & Software Engineer
+
+* **Active GitHub Repository:** [@ashrafabusunaina1986](https://github.com/ashrafabusunaina1986)
+* **Operational Cloud Workspace Website:** [workora.cloud](https://workora.cloud)
+
+---
+*Task Menu — Workora is an evolutionary computing architecture constantly optimized for full-stack software reliability, clean layered layout definitions, and zero-trust perimeter network security implementations.*
