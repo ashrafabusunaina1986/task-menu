@@ -1,29 +1,30 @@
-
 // app/project/edit/[id]/page.tsx
 "use client";
 
 import ProjectForm from "@/components/project/ProjectForm";
-import {
-  getProject,
-  updateProject,
-} from "@/lib/project/project";
-import type {
-  Project,
-  ProjectRead,
-  ProjectUpdate,
-} from "@/types/project";
+import { getProject, updateProject } from "@/lib/project/project";
+import type { Project, ProjectRead, ProjectUpdate } from "@/types/project";
 import { useRouter, useParams } from "next/navigation";
+import { useSession } from "next-auth/react"; // استخدام الجلسة من جهة العميل لمنع ثغرات الـ Compile
 import React, { useEffect, useState } from "react";
 
 export default function ProjectEditPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const id = params.id;
+  const { data: session, status: sessionStatus } = useSession(); // جلب الجلسة والتحقق من حالة الاتصال
 
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  // جدار حماية الواجهة الأمامية: إعادة توجيه المستخدم إذا لم يكن مسجلاً للدخول
+  useEffect(() => {
+    if (sessionStatus === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [sessionStatus, router]);
 
   useEffect(() => {
     async function loadProject() {
@@ -45,10 +46,10 @@ export default function ProjectEditPage() {
       }
     }
 
-    if (id) {
+    if (id && sessionStatus === "authenticated") {
       loadProject();
     }
-  }, [id]);
+  }, [id, sessionStatus]);
 
   async function handleSubmit(data: ProjectUpdate) {
     if (!project) return;
@@ -57,7 +58,6 @@ export default function ProjectEditPage() {
     setError(null);
 
     try {
-      // إصلاح الأمان: جلب دقيق للمعرف الموحد المتوافق مع محددات جافا سكريبت وقواعد المونجو
       const projectId = project._id || (project as any)._id;
 
       if (!projectId) {
@@ -66,14 +66,16 @@ export default function ProjectEditPage() {
 
       await updateProject(projectId, data);
       router.push("/project");
+      router.refresh();
     } catch (err) {
       console.error(err);
       setError(err instanceof Error ? err.message : "Deployment failure: Internal status alternation rejected by host.");
       setIsUpdating(false);
     }
   }
-  // واجهة فحص التحميل ومزامنة الخادم لـ Workora
-  if (loading) {
+
+  // شاشة فحص الاتصال ومزامنة الخادم لـ Workora
+  if (loading || sessionStatus === "loading") {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#08080d]">
         <div className="text-center space-y-3">
@@ -85,14 +87,14 @@ export default function ProjectEditPage() {
   }
 
   // واجهة الحماية في حال عدم العثور على الحاوية المطلوبة بالـ Database
-  if (!project || error && !project) {
+  if (!project || (error && !project)) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#08080d] p-4">
         <div className="text-center max-w-sm p-6 rounded-2xl border border-dashed border-rose-900/40 bg-rose-950/5 space-y-3">
           <span className="text-2xl">⚠️</span>
           <h3 className="text-sm font-bold text-rose-400 uppercase tracking-wider block">Container Node Isolation</h3>
           <p className="text-xs text-gray-500 leading-5">The requested cluster reference ID does not match any operational index inside this cloud workspace.</p>
-          <button onClick={() => router.push("/project")} className="mt-2 text-xs font-bold text-gray-400 hover:text-white transition">Return to Pipelines</button>
+          <button onClick={() => router.push("/project")} className="mt-2 text-xs font-bold text-gray-400 hover:text-white transition cursor-pointer">Return to Pipelines</button>
         </div>
       </main>
     );
@@ -100,7 +102,6 @@ export default function ProjectEditPage() {
 
   return (
     <main className="min-h-screen bg-[#08080d] relative overflow-hidden flex items-center justify-center p-4 md:p-8">
-
       {/* Ambient Cyberpunk Glow Background Overlays */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         <div className="w-[1000px] h-[1000px] rounded-full bg-purple-600/5 blur-[220px]" />
@@ -108,22 +109,8 @@ export default function ProjectEditPage() {
       </div>
 
       {/* Premium Glassmorphic Center Card Frame */}
-      <div className="
-        relative 
-        w-full 
-        max-w-3xl 
-        rounded-[32px] 
-        border border-white/5 
-        bg-[#0d0d16]/80 
-        p-6 
-        md:p-12 
-        shadow-[0_30px_90px_rgba(0,0,0,0.85)] 
-        backdrop-blur-2xl 
-        transition-all 
-        duration-300 
-        hover:border-purple-500/15
-      ">
-        {/* Back Track Navigation Translucent Button Control */}
+      <div className="relative w-full max-w-3xl rounded-[32px] border border-white/5 bg-[#0d0d16]/80 p-6 md:p-12 shadow-[0_30px_90px_rgba(0,0,0,0.85)] backdrop-blur-2xl transition-all duration-300 hover:border-purple-500/15">
+        {/* Back Track Navigation Button */}
         <button
           onClick={() => router.push("/project")}
           className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-purple-400 uppercase tracking-wider mb-6 transition cursor-pointer"
@@ -133,18 +120,7 @@ export default function ProjectEditPage() {
 
         {/* Section Heading Titles Layout */}
         <div className="mb-8 border-b border-gray-900 pb-5">
-          <h1 className="
-                text-3xl 
-                md:text-4xl 
-                font-extrabold 
-                bg-gradient-to-r 
-                from-blue-400 
-                via-purple-400 
-                to-pink-400 
-                bg-clip-text 
-                text-transparent
-                tracking-tight
-            ">
+          <h1 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent tracking-tight">
             Modify Configuration
           </h1>
           <p className="text-xs text-gray-500 mt-1.5">Re-route runtime statuses, priority variables, or alter active lifecycle timestamps safely.</p>
@@ -164,11 +140,18 @@ export default function ProjectEditPage() {
             <p className="text-xs text-gray-500 font-medium tracking-wide">Syncing state alterations and rebuilding pipeline matrices...</p>
           </div>
         ) : (
-          /* The Fully Re-engineered Forms Integration Matrix Core */
+          /* 
+             ✅ تم الإصلاح الجذري: حقن وتمرير خاصية currentUser المطلوبة من بيانات الجلسة الحية 
+             لإلغاء خطأ تباين الـ TypeScript وضمان تشغيل منطق الأدمن لتعيين الملاك حياً بنجاح!
+          */
           <div className="animate-fadeIn">
             <ProjectForm
               initialData={project}
               onSubmit={handleSubmit}
+              currentUser={{
+                id: (session?.user as any)?.id || "",
+                role: session?.user?.role || "user"
+              }}
             />
           </div>
         )}
