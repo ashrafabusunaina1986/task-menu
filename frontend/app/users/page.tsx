@@ -2,11 +2,14 @@
 
 import { auth } from "@/auth";
 import Users from "@/components/user/Users";
+import { redirect } from "next/navigation";
 
 
 export default async function ViewUsersPage() {
     const session = await auth()
-    const user = session?.user
+    if (!session?.accessToken) redirect("/login")
+    if (!session.user) redirect("/login")
 
-    return <Users user={user} />
+
+    return <Users user={{ ...session.user }} />
 }
