@@ -1,4 +1,5 @@
 // components/user/Users.tsx
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -13,6 +14,7 @@ interface Props {
         name?: string | null;
         email?: string | null;
         image?: string | null;
+        role?: string | null; // تم تمديد الواجهة لاستقبال رتبة Operator والتحقق منها صارماً
     } | null;
 }
 
@@ -21,6 +23,9 @@ export default function Users({ user }: Props) {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // فحص صلاحية الآدمين حياً لمنع الموظفين العاديين من رؤية بوابة حقن الحسابات الجديدة
+    const isAdminOperator = user?.role?.toLowerCase() === "admin";
 
     async function handleLogout() {
         const res = await fetch("/api/auth/logout", {
@@ -33,7 +38,6 @@ export default function Users({ user }: Props) {
         }
     }
 
-    // مزامنة آمنة ومحمية بالكامل O(1) لجلب مصفوفةOperators مع عزل أخطاء حاويات الـ Database
     useEffect(() => {
         let isMounted = true;
 
@@ -64,14 +68,37 @@ export default function Users({ user }: Props) {
             </div>
 
             {/* Centralized Glassmorphic Application Wrapper */}
-            <div className="relative z-10 w-full max-w-7xl mx-auto space-y-4">
+            <div className="relative z-10 w-full max-w-7xl mx-auto space-y-5">
                 <UserHeader
                     user={user}
                     logout={handleLogout}
                     home={true}
                 />
 
-                {/* Inline Exception Exception Alert Panel Layout */}
+                {/* 🔒 قسم حقن وإنشاء الحسابات المتقدم - يظهر حصرياً للرتب الإدارية العليا لـ Workora */}
+                {isAdminOperator && (
+                    <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between p-5 rounded-2xl border border-purple-500/10 bg-gradient-to-r from-[#11111e]/80 to-[#0e0e18]/40 gap-4 shadow-xl animate-fadeIn">
+                        <div className="space-y-1">
+                            <h3 className="text-sm font-bold text-white tracking-wide flex items-center gap-1.5">
+                                <span className="h-1.5 w-1.5 rounded-full bg-purple-500 animate-pulse" />
+                                Root Operator Provisioning Channel
+                            </h3>
+                            <p className="text-[11px] text-gray-500 max-w-xl leading-relaxed">
+                                Deploy an isolated credential node instance, allocate microservice clearance parameters, and authorize new infrastructure operators.
+                            </p>
+                        </div>
+                        
+                        <button
+                            type="button"
+                            onClick={() => router.push("/register")}
+                            className="w-full sm:w-auto px-5 py-2.5 text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 active:scale-[0.98] rounded-xl shadow-md shadow-purple-600/10 transition duration-150 cursor-pointer text-center"
+                        >
+                            + Provision New Operator
+                        </button>
+                    </div>
+                )}
+
+                {/* Inline Exception Alert Panel Layout */}
                 {error && (
                     <div className="bg-rose-950/40 border border-rose-800 text-rose-200 p-4 rounded-xl text-xs font-semibold animate-pulse max-w-7xl mx-auto">
                         ⚠️ {error}
@@ -94,3 +121,4 @@ export default function Users({ user }: Props) {
         </main>
     );
 }
+
