@@ -1,5 +1,4 @@
 // frontend/components/header/Header.tsx
-// frontend/components/header/Header.tsx
 
 import { auth } from '@/auth';
 import TopNavigation from '../navigation/TopNavigation';
@@ -8,7 +7,7 @@ import React from 'react';
 export default async function Header() {
     // 1. Retrieve the active live session from the core NextAuth server infrastructure layer
     const session = await auth();
-    
+
     // 2. Render the structural layout wrapper passing verified clearance metrics downstream
     // ✅ FIXED VIEWPORT MODE: Injected 'fixed top-0 left-0 right-0' utility classes to anchor the glassmorphic shell beautifully
     return (
