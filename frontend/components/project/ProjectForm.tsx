@@ -1,5 +1,4 @@
-
-// components/project/ProjectForm.tsx
+// frontend/components/project/ProjectForm.tsx
 "use client";
 
 import {
@@ -10,6 +9,7 @@ import {
 } from "@/types/project";
 import { UserForSelect } from "@/types/user";
 import { getUsersForSelect } from "@/lib/user/user";
+import { projectCreateSchema, projectUpdateSchema } from "@/schemas/project"; // Injected: Core security verification contracts
 import React, { useState, useEffect } from "react";
 
 interface ProjectFormProps {
@@ -33,7 +33,9 @@ export default function ProjectForm({
     const [startDate, setStartDate] = useState(initialData?.start_date?.slice(0, 10) ?? "");
     const [dueDate, setDueDate] = useState(initialData?.due_date?.slice(0, 10) ?? "");
 
-    const [dateValidationError, setDateValidationError] = useState<string | null>(null);
+    // Zod interface client error state telemetry mapping
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+    const [globalValidationError, setGlobalValidationError] = useState<string | null>(null);
 
     const isAdmin = currentUser.role?.toLowerCase() === "admin";
 
@@ -42,7 +44,6 @@ export default function ProjectForm({
     const [owners, setOwners] = useState<UserForSelect[]>([]);
     const [loadingOwners, setLoadingOwners] = useState(false);
 
-    // Synchronize initial data payloads or fallbacks on authentication hydration
     useEffect(() => {
         if (initialData?.owner_id) {
             setOwnerId(initialData.owner_id);
@@ -53,7 +54,6 @@ export default function ProjectForm({
         }
     }, [isAdmin, currentUser.id, currentUser.role, initialData]);
 
-    // Fetch active registry operators from the client proxy channel
     useEffect(() => {
         if (!isAdmin) {
             setLoadingOwners(false);
@@ -75,7 +75,6 @@ export default function ProjectForm({
         void fetchOwnersPayload();
     }, [isAdmin]);
 
-    // ✅ FIXED: Multi-state sync atomic handler to map both ID and Role instantly on click
     const handleOwnerChange = (selectedId: string) => {
         setOwnerId(selectedId);
         if (selectedId === "") {
@@ -88,29 +87,40 @@ export default function ProjectForm({
 
     function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        setDateValidationError(null);
+        setFieldErrors({});
+        setGlobalValidationError(null);
 
-        if (startDate && dueDate) {
-            const startTimestamp = new Date(startDate).getTime();
-            const dueTimestamp = new Date(dueDate).getTime();
+        const payload = {
+            name: name,
+            description: description || null,
+            status: status,
+            priority: priority,
+            start_date: startDate || null,
+            due_date: dueDate || null
+        };
 
-            if (dueTimestamp < startTimestamp) {
-                setDateValidationError("Target delivery deadline (Due Date) must be a timestamp strictly greater than or equal to the initialization start date.");
-                return;
+        // ✅ FIXED: Select validation contract scheme dynamically based on create or update mutations
+        const targetSchema = initialData ? projectUpdateSchema : projectCreateSchema;
+        const resultSchema = targetSchema.safeParse(payload);
+
+        if (!resultSchema.success) {
+            const flattenedErrors = resultSchema.error.flatten();
+            setFieldErrors(flattenedErrors.fieldErrors as any);
+            
+            // Extract root timeline exceptions if present inside global arrays
+            if (flattenedErrors.formErrors.length > 0) {
+                setGlobalValidationError(flattenedErrors.formErrors[0]);
             }
+            return;
         }
 
         onSubmit({
-            name,
-            description,
-            status,
-            priority,
-            start_date: startDate || null,
-            due_date: dueDate || null,
+            ...payload,
             owner_id: isAdmin ? (ownerId.trim() !== "" ? ownerId : null) : currentUser.id,
             owner_role: isAdmin ? (ownerRole.trim() !== "" ? ownerRole : null) : currentUser.role,
         } as any);
     }
+
     const statusOptions = [
         { value: "planned", label: "Planned", activeClass: "border-blue-500/40 bg-blue-500/10 text-blue-400" },
         { value: "in_progress", label: "In Progress", activeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400" },
@@ -139,9 +149,10 @@ export default function ProjectForm({
                 <p className="text-xs text-gray-500 mt-1">Configure workspace parameters, access roles, and production timelines.</p>
             </div>
 
-            {dateValidationError && (
+            {/* Inline Timeline Exception Alert Panel Layout */}
+            {(globalValidationError || fieldErrors.due_date) && (
                 <div className="bg-rose-950/40 border border-rose-800/80 text-rose-200 p-4 rounded-xl text-xs font-semibold animate-pulse tracking-wide">
-                    ⚠️ Validation Error: {dateValidationError}
+                    ⚠️ Validation Error: {globalValidationError || fieldErrors.due_date?.[0]}
                 </div>
             )}
 
@@ -157,15 +168,15 @@ export default function ProjectForm({
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        required
                         maxLength={150}
                         placeholder="Enter an intuitive identifier name..."
                         className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 pl-11 pr-4 py-3.5 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10"
                     />
                 </div>
+                {fieldErrors.name && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.name[0]}</p>}
             </div>
 
-            {/* 👑 ADMIN DROPDOWN: Fixed structural bounds and attached dual-state sync maps */}
+            {/* 👑 ADMIN DROPDOWN: Attached dual-state sync maps */}
             {isAdmin && (
                 <div className="space-y-1.5 animate-fadeIn">
                     <label className="block text-xs font-bold text-purple-400 uppercase tracking-wider">
@@ -204,6 +215,7 @@ export default function ProjectForm({
                     placeholder="Provide contextual goals, repositories, infrastructure requirements..."
                     className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 px-4 py-3.5 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 resize-none"
                 />
+                {fieldErrors.description && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.description[0]}</p>}
             </div>
 
             {/* Flow Status Options */}
@@ -250,6 +262,7 @@ export default function ProjectForm({
                         onChange={(e) => setStartDate(e.target.value)}
                         className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 px-4 py-3.5 text-xs text-white outline-none transition focus:border-purple-500/50 uppercase font-mono cursor-pointer"
                     />
+                    {fieldErrors.start_date && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.start_date[0]}</p>}
                 </div>
                 <div className="space-y-1.5">
                     <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Target Delivery Deadline</label>
