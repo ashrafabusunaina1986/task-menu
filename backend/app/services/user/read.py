@@ -13,6 +13,16 @@ class UserReadService(UserServiceBase):
             User(**user)
             for user in users
         ]
+    # services/users/user_service.py
+
+    async def get_users_for_select(self):
+        """
+        Decoupled service handler acting as a bridge transaction wrapper 
+        to resolve minified active operator selections from the persistence layer.
+        """
+        # استدعاء دالة الـ Repository المصلحة والمحمية من الـ Infinite Loop والأخطاء
+        return await self.repository.get_users_for_select()
+
 
     async def get_by_id(self, user_id: str) -> User | None:
         user = await self.repository.get_by_id(

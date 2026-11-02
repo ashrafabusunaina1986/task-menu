@@ -19,53 +19,7 @@ class ProjectRepositoryRead:
     async def get_projects(
         self,
     ) -> list[ProjectModel]:
-        pipeline = [
-            {
-                "$addFields": {
-                    "owner_object_id": {
-                        "$convert": {
-                            "input": "$owner_id",
-                            "to": "objectId",
-                            "onError": None,
-                            "onNull": None,
-                        }
-                    }
-                }
-            },
-            {
-                "$lookup": {
-                    "from": "users",
-                    "localField": "owner_object_id",
-                    "foreignField": "_id",
-                    "pipeline": [
-                        {
-                            "$project": {
-                                "_id": 0,
-                                "role": 1
-                            }
-                        }
-                    ],
-                    "as": "owner"
-                }
-            },
-            {
-                "$addFields": {
-                    "owner_role": {
-                        "$ifNull": [
-                            {"$arrayElemAt": ["$owner.role", 0]},
-                            None
-                        ]
-                    }
-                }
-            },
-            {
-                "$project": {
-                    "owner": 0,
-                    "owner_object_id": 0
-                }
-            }
-        ]
-        cursor = self.collection.aggregate(pipeline=pipeline)
+        cursor = self.collection.find()
 
         projects = await cursor.to_list(length=None)
 

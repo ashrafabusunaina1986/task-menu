@@ -4,6 +4,6 @@ import CreateUser from "@/components/auth/Register";
 
 
 
-export default function CreateUserPage() {
+export default function RegisterPage() {
   return <CreateUser/>
 }

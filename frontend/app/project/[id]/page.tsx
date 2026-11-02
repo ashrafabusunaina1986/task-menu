@@ -1,14 +1,15 @@
-
 // app/project/[id]/page.tsx
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
-
 import { Project } from "@/types/project";
 import LocalDate from "@/components/date/LocalDate";
 import { getProject } from "@/lib/project/server";
+import React from "react";
 
-// تمديد واجهة الـ Project لتشمل الخصائص الإحصائية ودور المالك القادم من قاعدة البيانات
+// Extend core Project type blueprint to capture dynamic analytics and owner identification metadata
 type ExtendedProject = Project & {
+  owner_id?: string | null;
   owner_role?: string | null;
   tasks_stats?: {
     todo: number;
@@ -23,14 +24,12 @@ interface ProjectPageProps {
   }>;
 }
 
-export default async function ProjectPage({
-  params,
-}: ProjectPageProps) {
+export default async function ProjectPage({ params }: ProjectPageProps) {
   const { id } = await params;
-
   let project: ExtendedProject | null = null;
 
   try {
+    // Fetch parent project container properties directly via server action projection pipelines
     const response = await getProject({ project_id: id });
     project = response as ExtendedProject;
 
@@ -38,13 +37,13 @@ export default async function ProjectPage({
       notFound();
     }
   } catch (error) {
-    console.error(error);
+    console.error("Critical Server Exception: Project layout rendering failed:", error);
     notFound();
   }
 
   const targetProjectId = project._id || "";
 
-  // حساب كفاءة إنجاز المهام التراكمية ديناميكيًا داخل السيرفر
+  // Compute global completion rate velocity using operational matrix attributes
   const totalTasks = project.tasks_stats
     ? (project.tasks_stats.todo + project.tasks_stats.in_progress + project.tasks_stats.done)
     : 0;
@@ -53,7 +52,7 @@ export default async function ProjectPage({
     ? Math.round((project.tasks_stats.done / totalTasks) * 100)
     : 0;
 
-  // دالة تحديد سمات شارات الألوان للأدوار
+  // Resolve dynamic role badge aesthetic layouts on production runtime
   const getRoleBadgeStyles = (role: string | null | undefined) => {
     if (!role) return "bg-gray-850 text-gray-500 border-gray-800";
     switch (role.toLowerCase()) {
@@ -65,7 +64,7 @@ export default async function ProjectPage({
   };
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#08080d] py-10 px-4 sm:px-6">
-      {/* Premium Ambient Background Glow */}
+      {/* Premium Ambient Background Glow Overlays */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         <div className="h-[1000px] w-[1000px] rounded-full bg-purple-600/5 blur-[240px]" />
         <div className="absolute h-[600px] w-[600px] rounded-full bg-blue-500/5 blur-[180px]" />
@@ -81,11 +80,28 @@ export default async function ProjectPage({
           >
             <span>←</span> Pipelines Container
           </Link>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Security clearance:</span>
-            <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md border uppercase ${getRoleBadgeStyles(project.owner_role)}`}>
-              {project.owner_role || "No Owner"}
-            </span>
+
+          <div className="flex items-center gap-4">
+            {/* 
+               🔒 CONDITIONALLY RENDERED GATEWAY:
+               The 'View Tasks' link action button will ONLY render if an explicit 'owner_id' 
+               is allocated to the project container node. Unassigned clusters will isolate tasks.
+            */}
+            {project.owner_id && project.owner_id.trim() !== "" && (
+              <Link
+                href={`/tasks?project_id=${encodeURIComponent(targetProjectId)}`}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-purple-500/30 bg-purple-500/10 text-xs font-bold uppercase tracking-wider text-purple-400 hover:bg-purple-600 hover:text-white shadow-lg shadow-purple-600/10 active:scale-[0.98] transition-all duration-150 animate-fadeIn"
+              >
+                📋 View Tasks
+              </Link>
+            )}
+
+            <div className="flex items-center gap-2">
+              <span className="hidden sm:inline text-[10px] text-gray-500 font-bold uppercase tracking-wider">Security clearance:</span>
+              <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md border uppercase ${getRoleBadgeStyles(project.owner_role)}`}>
+                {project.owner_role || "No Owner"}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -134,6 +150,7 @@ export default async function ProjectPage({
               {project.description || "No project description metadata provided in this operational node."}
             </p>
           </div>
+
           {/* Timeline Execution Timestamps */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="rounded-xl border border-gray-800/60 bg-[#141423]/40 p-4 flex items-center justify-between">
@@ -157,7 +174,7 @@ export default async function ProjectPage({
             </div>
           </div>
 
-          {/* Infrastructure Logging Metadata Timestamps */}
+          {/* Infrastructure Logging Metadata Timestamps - ✅ FIXED: Reconstructed truncated layout loops */}
           <div className="grid gap-4 sm:grid-cols-2 border-t border-gray-900 pt-6">
             <div className="rounded-xl border border-gray-800/30 bg-[#141423]/10 p-4">
               <h2 className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Node Initialization</h2>
@@ -173,43 +190,7 @@ export default async function ProjectPage({
               </p>
             </div>
           </div>
-        </div>
 
-        {/* Associated Core Project Task Management Module */}
-        <div className="mt-6 p-6 rounded-2xl border border-purple-500/10 bg-gradient-to-b from-[#121222]/60 to-[#0e0e18]/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="space-y-1">
-            <h2 className="text-base font-bold text-white tracking-wide">
-              Atomic Task Instances Pipeline
-            </h2>
-            <p className="text-xs text-gray-500 max-w-md">
-              Review isolated sub-task velocities, clear backend logs, and coordinate execution instances assigned to this parent cluster.
-            </p>
-          </div>
-
-          <Link
-            href={`/tasks?project_id=${encodeURIComponent(targetProjectId)}`}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-cyan-500/20 bg-cyan-500/5 px-5 py-2.5 text-xs font-bold text-cyan-400 transition hover:bg-cyan-500/15 active:scale-[0.98] self-start sm:self-center"
-          >
-            <span>View Tracked Tasks</span>
-            <span className="text-[10px] bg-cyan-950 px-1.5 py-0.2 rounded text-cyan-300 font-mono font-bold">{totalTasks}</span>
-          </Link>
-        </div>
-
-        {/* Global Administrative Actions Panel Control */}
-        <div className="mt-8 pt-5 border-t border-gray-900 flex flex-col sm:flex-row sm:justify-between gap-4 items-center">
-          <Link
-            href="/project"
-            className="w-full sm:w-auto text-center rounded-xl border border-gray-800 bg-[#141423]/40 px-6 py-2.5 text-xs font-bold text-gray-400 transition hover:bg-gray-800 hover:text-white"
-          >
-            Back to Container List
-          </Link>
-
-          <Link
-            href={`/project/edit/${targetProjectId}`}
-            className="w-full sm:w-auto text-center rounded-xl bg-purple-600 px-6 py-2.5 text-xs font-bold text-white shadow-lg shadow-purple-600/20 transition hover:bg-purple-700 active:scale-[0.98]"
-          >
-            Modify Project Parameters
-          </Link>
         </div>
       </div>
     </main>

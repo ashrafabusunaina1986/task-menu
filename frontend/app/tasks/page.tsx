@@ -14,7 +14,7 @@ export default async function TasksPage({
     const session = await auth();
 
     // فحص وتأمين الاتصال عبر التوكن الأمني لـ Workora قبل جلب الحزم
-    if (!session?.accessToken) {
+    if (!session || !session.user || !session?.accessToken) {
         redirect("/login");
     }
 
@@ -26,12 +26,14 @@ export default async function TasksPage({
 
     return (
         <TasksClient
+            session={session}
             project_id={project_id}
             // إصلاح TypeScript: تفكيك وتمرير الخصائص بشكل صريح وآمن لضمان التوافق المطلق مع واجهة الـ Props
             user={{
                 name: session.user?.name,
                 email: session.user?.email,
                 image: session.user?.image,
+                role: session.user.role
             }}
         />
     );

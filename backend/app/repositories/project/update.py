@@ -22,7 +22,7 @@ class ProjectRepositoryUpdate:
         project_id: str,
         data: ProjectUpdate
     ) -> bool:
-
+        print("data", data)
         if not project_id:
             return False
 

@@ -21,7 +21,6 @@ class ProjectRepositoryCreate:
             by_alias=True,
             mode='python'
         )
-
         record_project = await self.collection.insert_one(
             data_model
         )

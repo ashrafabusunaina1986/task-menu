@@ -21,12 +21,19 @@ export interface User {
     updated_at: string
 }
 
+export interface UserForSelect {
+    _id: string
+    name: string
+    email: string
+    role: string
+}
+
 
 export interface CreateUser {
     name: string
     email: string
     password: string
-    image?:string
+    image?: string
 }
 
 

@@ -1,4 +1,5 @@
 // components/user/Users.tsx
+
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
@@ -7,7 +8,9 @@ import { getUsers } from '@/lib/user/user';
 import { User } from '@/types/user';
 import UserList from './UserList';
 import UserHeader from './UserHeader';
-import { FiSearch, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { FiSearch, FiChevronLeft, FiChevronRight, FiSliders } from "react-icons/fi";
+import { Session } from "next-auth";
+import TopNavigation from "../navigation/TopNavigation";
 
 interface Props {
     user?: {
@@ -16,18 +19,20 @@ interface Props {
         image?: string | null;
         role?: string | null;
     } | null;
+    session: Session
 }
 
-export default function Users({ user }: Props) {
+export default function Users({ user, session }: Props) {
     const router = useRouter();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // حالات التحكم الإحصائي في البحث وتقسيم الصفحات (Pagination & Filter States)
+    // Operational parameters controlling unified multi-layered search filters and paging frameworks
     const [searchTerm, setSearchTerm] = useState("");
+    const [selectedRole, setSelectedRole] = useState<string>("all"); // Injected: Dedicated state to map dynamic role filtering loops
     const [currentPage, setCurrentPage] = useState(1);
-    const USERS_PER_PAGE = 10; // شرط العرض: 10 يوزرز فقط في كل صفحة
+    const USERS_PER_PAGE = 10;
 
     const isAdminOperator = user?.role?.toLowerCase() === "admin";
 
@@ -60,46 +65,47 @@ export default function Users({ user }: Props) {
         return () => { isMounted = false; };
     }, []);
 
-    // 🔍 منطق الفرز والبحث الذكي الموحد عبر الـ useMemo لحماية أداء المتصفح
+    // 🔍 OPTIMIZED: Blending both input query strings and the selected drop-down role state into a memoized filtration pipeline
     const filteredUsers = useMemo(() => {
         const query = searchTerm.trim().toLowerCase();
         return users.filter((u) => {
-            return (
+            const matchesQuery =
                 query === "" ||
                 (u.name ?? "").toLowerCase().includes(query) ||
                 (u.email ?? "").toLowerCase().includes(query) ||
-                (u.role ?? "").toLowerCase().includes(query)
-            );
+                (u.role ?? "").toLowerCase().includes(query);
+
+            const matchesRole =
+                selectedRole === "all" ||
+                (u.role ?? "").toLowerCase() === selectedRole.toLowerCase();
+
+            return matchesQuery && matchesRole;
         });
-    }, [users, searchTerm]);
-    // 📊 عمليات الحساب الرقمي الدقيق لتقسيم الصفحات بناءً على الفرز الفعلي
+    }, [users, searchTerm, selectedRole]);
+
     const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE) || 1;
 
-    // تصفير مؤشر الصفحة تلقائياً في حال تجاوز البحث للنطاق المتاح
+    // Reset pagination indices dynamically if filtering inputs shift bounds
     useEffect(() => {
         if (currentPage > totalPages) {
             setCurrentPage(1);
         }
-    }, [searchTerm, totalPages, currentPage]);
+    }, [searchTerm, selectedRole, totalPages, currentPage]);
 
-    // عزل واستخراج الـ 10 مستخدمين المخصصين للصفحة النشطة حالياً O(1)
     const paginatedUsers = useMemo(() => {
         const startIndex = (currentPage - 1) * USERS_PER_PAGE;
         return filteredUsers.slice(startIndex, startIndex + USERS_PER_PAGE);
     }, [filteredUsers, currentPage]);
-
     return (
-        <main className="min-h-screen bg-[#08080d] relative overflow-hidden flex flex-col p-4 md:p-8 text-white">
+        <main className="min-h-screen bg-[#08080d] relative overflow-hidden flex flex-col p-4 md:p-8 text-white w-full">
             {/* Ambient Fluid Glow Background Layers */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
                 <div className="w-[1100px] h-[1000px] rounded-full bg-purple-600/[0.04] blur-[240px]" />
                 <div className="w-[600px] h-[600px] rounded-full bg-blue-500/[0.03] blur-[180px] absolute" />
             </div>
-
             <div className="relative z-10 w-full max-w-7xl mx-auto space-y-5">
-                <UserHeader user={user} logout={handleLogout} home={true} />
 
-                {/* 🔒 Root Operator Provisioning Channel - Admin Gate */}
+                {/* Root Operator Provisioning Channel - Admin Gate */}
                 {isAdminOperator && (
                     <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between p-5 rounded-2xl border border-purple-500/10 bg-gradient-to-r from-[#11111e]/80 to-[#0e0e18]/40 gap-4 shadow-xl">
                         <div className="space-y-1">
@@ -113,7 +119,7 @@ export default function Users({ user }: Props) {
                         </div>
                         <button
                             type="button"
-                            onClick={() => router.push("/register")}
+                            onClick={() => router.push("/users/create")}
                             className="w-full sm:w-auto px-5 py-2.5 text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 active:scale-[0.98] rounded-xl transition duration-150 cursor-pointer text-center"
                         >
                             + Provision New Operator
@@ -121,22 +127,42 @@ export default function Users({ user }: Props) {
                     </div>
                 )}
 
-                {/* 🔍 قسم شريط البحث الذكي المطور - Advanced Search Filter Bar */}
-                <div className="flex bg-[#11111a]/80 p-4 rounded-2xl border border-gray-800/60 shadow-inner">
-                    <div className="relative w-full max-w-md group">
+                {/* 🔍 ENHANCED: Integrated Advanced Double-Filter Bar containing the new role mapping dropdown selection block */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[#11111a]/80 p-4 rounded-2xl border border-gray-800/60 shadow-inner">
+                    <div className="relative w-full md:col-span-2 group">
                         <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-purple-500 transition" />
                         <input
                             type="text"
-                            placeholder="Search by name, email database node, or role scope..."
+                            placeholder="Search by name, email database node, or keyword tokens..."
                             value={searchTerm}
                             onChange={(e) => {
                                 setSearchTerm(e.target.value);
-                                setCurrentPage(1); // تصفير الصفحة عند إدخال فلتر جديد
+                                setCurrentPage(1);
                             }}
-                            className="w-full bg-[#161622] border border-gray-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/5 transition duration-150"
+                            className="w-full bg-[#161622] border border-gray-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/5 transition duration-150"
                         />
                     </div>
+
+                    {/* 🎛️ Injected Drop-down layout mapping structural roles smoothly to separate metrics on screen */}
+                    <div className="relative w-full group">
+                        <FiSliders className="absolute left-3.5 top-1/2 -translate-y-1/2 text-purple-400 text-xs" />
+                        <select
+                            value={selectedRole}
+                            onChange={(e) => {
+                                setSelectedRole(e.target.value);
+                                setCurrentPage(1);
+                            }}
+                            className="w-full bg-[#161622] border border-gray-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/5 transition duration-150 cursor-pointer appearance-none"
+                        >
+                            <option value="all">Filter Scope: All System Roles</option>
+                            <option value="admin">Administrators</option>
+                            <option value="manager">Managers</option>
+                            <option value="user">Standard Operators (Users)</option>
+                        </select>
+                        <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-purple-500 text-[10px]">▼</div>
+                    </div>
                 </div>
+
                 {/* Error Banner System */}
                 {error && (
                     <div className="bg-rose-950/40 border border-rose-800 text-rose-200 p-4 rounded-xl text-xs font-semibold animate-pulse">
@@ -151,55 +177,40 @@ export default function Users({ user }: Props) {
                         <p className="text-xs text-zinc-500 font-semibold tracking-wider uppercase">Decrypting cloud user clusters registries...</p>
                     </div>
                 ) : (
-                    /* رندر شبكة كروت وقوائم المستخدمين المحددة بـ 10 حسابات فقط */
+                    /* Render paginated accounts registry */
                     <div className="space-y-6">
                         <div className="rounded-3xl border border-white/5 bg-[#0d0d16]/40 backdrop-blur-md p-2 shadow-xl animate-fadeIn">
                             <UserList users={paginatedUsers} />
                         </div>
 
-                        {/* 🎛️ لوحة أزرار تقسيم وحساب الصفحات الختامية - Translucent Analytics Pagination Panel */}
+                        {/* ✅ FIXED: Reconstructed and closed the missing pagination tracking controls perfectly */}
                         {filteredUsers.length > 0 && (
-                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#11111a]/80 p-4 rounded-2xl border border-gray-800/60 shadow-lg">
-                                <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                                    Showing <b className="text-gray-300 font-mono">{(currentPage - 1) * USERS_PER_PAGE + 1}</b> - <b className="text-gray-300 font-mono">{Math.min(currentPage * USERS_PER_PAGE, filteredUsers.length)}</b> of <b className="text-purple-400 font-mono">{filteredUsers.length}</b> Entries
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 px-2 text-xs font-medium text-gray-500">
+                                <span className="font-mono text-[11px]">
+                                    Showing <span className="text-purple-400 font-bold">{paginatedUsers.length}</span> of <span className="text-white font-bold">{filteredUsers.length}</span> operators localized.
                                 </span>
 
-                                <div className="flex items-center bg-[#161622] p-1 rounded-xl border border-gray-800/60 gap-1 select-none">
+                                <div className="flex items-center gap-2">
                                     <button
                                         type="button"
                                         disabled={currentPage === 1}
-                                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                                        className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50 disabled:opacity-20 disabled:hover:bg-transparent disabled:cursor-not-allowed transition cursor-pointer"
-                                        title="Previous Matrix Page"
+                                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                        className="inline-flex items-center justify-center p-2 rounded-xl bg-[#141423]/60 border border-gray-800 text-white disabled:opacity-30 disabled:cursor-not-allowed hover:border-purple-500/40 hover:bg-[#141423] transition cursor-pointer"
                                     >
-                                        <FiChevronLeft size={16} />
+                                        <FiChevronLeft className="text-sm" />
                                     </button>
 
-                                    {/* عرض أرقام الصفحات التراكمية ديناميكياً */}
-                                    <div className="flex gap-1 px-1">
-                                        {Array.from({ length: totalPages }, (_, index) => {
-                                            const pageNum = index + 1;
-                                            return (
-                                                <button
-                                                    key={pageNum}
-                                                    type="button"
-                                                    onClick={() => setCurrentPage(pageNum)}
-                                                    className={`h-7 w-7 rounded-lg text-xs font-bold tracking-tight transition-all duration-150 cursor-pointer ${currentPage === pageNum ? "bg-purple-600 text-white shadow-md shadow-purple-600/20" : "text-gray-500 hover:text-gray-300"}`}
-                                                >
-                                                    {pageNum}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
+                                    <span className="font-mono text-[11px] bg-[#11111a] border border-gray-800 px-3 py-1.5 rounded-xl text-gray-300">
+                                        Page <span className="text-purple-400 font-bold">{currentPage}</span> / {totalPages}
+                                    </span>
 
                                     <button
                                         type="button"
                                         disabled={currentPage === totalPages}
-                                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                                        className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50 disabled:opacity-20 disabled:hover:bg-transparent disabled:cursor-not-allowed transition cursor-pointer"
-                                        title="Next Matrix Page"
+                                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                        className="inline-flex items-center justify-center p-2 rounded-xl bg-[#141423]/60 border border-gray-800 text-white disabled:opacity-30 disabled:cursor-not-allowed hover:border-purple-500/40 hover:bg-[#141423] transition cursor-pointer"
                                     >
-                                        <FiChevronRight size={16} />
+                                        <FiChevronRight className="text-sm" />
                                     </button>
                                 </div>
                             </div>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import AiTranslator from "../translation/AiTranslator";
 
 type TopNavigationProps = {
     isAuthenticated: boolean;
@@ -69,7 +70,7 @@ export default function TopNavigation({
     return (
         <nav className="relative z-50 mx-auto w-[94%] max-w-7xl pt-4 sm:pt-6">
             <div className="rounded-2xl border border-white/5 bg-[#0d0d16]/90 px-4 py-3 shadow-[0_20px_50px_rgba(0,0,0,0.75)] backdrop-blur-xl sm:px-6 sm:py-3.5 flex flex-col justify-center">
-                
+
                 {/* Top Desktop Row Panel */}
                 <div className="flex items-center justify-between">
                     {/* Brand Interactive Logo */}
@@ -81,7 +82,7 @@ export default function TopNavigation({
                         >
                             Workora
                         </Link>
-                        
+
                         {/* الإحصائية البصرية لدور المالك حياً داخل الهيدر */}
                         {isAuthenticated && role && (
                             <span className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded border uppercase tracking-wider select-none ${getRoleBadgeClass(role)}`}>
@@ -89,6 +90,8 @@ export default function TopNavigation({
                             </span>
                         )}
                     </div>
+
+
 
                     {/* Desktop Dynamic Navigation Links Core */}
                     <div className="hidden items-center gap-1.5 md:flex">
@@ -125,6 +128,7 @@ export default function TopNavigation({
                             {!isAuthenticated ? "Login Gate" : "Disconnect"}
                         </Link>
                     </div>
+
 
                     {/* Mobile Menu Action Toggle Trigger Button */}
                     <button

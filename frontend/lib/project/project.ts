@@ -47,7 +47,7 @@ export function getProject(data: ProjectRead): Promise<{ success: boolean; data:
 // CREATE PROJECT
 // ==========================================
 
-export function createProject(data: ProjectCreate): Promise<Project> {
+export function createProject(data: ProjectCreate & { owner_id: string | null, owner_role: string | null }): Promise<Project> {
     return clientFetch<Project>(`/project/create`, {
         method: "POST",
         body: JSON.stringify(data)

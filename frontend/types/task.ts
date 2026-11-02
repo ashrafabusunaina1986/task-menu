@@ -23,6 +23,9 @@ export interface Task {
     status: TaskStatus;
     priority: TaskPriority;
 
+    start_date: string | null
+    due_date: string | null
+
     created_at: string;
     updated_at: string;
 }
@@ -34,13 +37,9 @@ export interface CreateTask {
 
     status?: TaskStatus;
     priority?: TaskPriority;
+    start_date?: string
+    due_date?: string
 }
 
 
-export interface UpdateTask {
-    title?: string;
-    description?: string;
-
-    status?: TaskStatus;
-    priority?: TaskPriority;
-}
+export interface UpdateTask extends Partial<CreateTask> { }

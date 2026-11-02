@@ -9,7 +9,7 @@ export default async function ProjectPage() {
     const session = await auth();
 
     // فحص صلاحية الدخول والتوكن الأمني لحماية الحسابات الحية
-    if (!session?.accessToken) {
+    if (!session || !session.user || !session?.accessToken) {
         redirect("/login");
     }
 
@@ -29,6 +29,7 @@ export default async function ProjectPage() {
                 // إصلاح TypeScript: استخدام التقييم الآمن لمنع فشل الـ Build في السيرفر
                 role: session.user?.role
             }}
+            session={session}
         />
     );
 }

@@ -24,14 +24,6 @@ export default async function SettingsPage() {
                 <div className="absolute -right-20 top-40 h-[500px] w-[500px] rounded-full bg-purple-700/10 blur-[180px]" />
             </div>
 
-            {/* Top Navigation Panel Component */}
-            <div className="relative z-50">
-                <TopNavigation
-                    isAuthenticated={true}
-                    role={role}
-                />
-            </div>
-
             {/* Central Operational Settings Container */}
             <section className="relative z-10 mx-auto mt-10 w-[94%] max-w-7xl space-y-8 animate-fadeIn">
                 {/* Section Header Labels */}

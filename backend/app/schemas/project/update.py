@@ -7,8 +7,13 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.project.project import Status, Priority
 
+from app.security.permissions.roles import Role
+
 
 class ProjectUpdate(BaseModel):
+    owner_id: str | None = None
+
+    owner_role: Role | None
 
     name: str | None = Field(
         default=None,
@@ -31,5 +36,6 @@ class ProjectUpdate(BaseModel):
 
     model_config = ConfigDict(
         str_strip_whitespace=True,
-        extra="forbid"
+        extra="forbid",
+        from_attributes=True
     )

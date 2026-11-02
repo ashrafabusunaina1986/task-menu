@@ -5,6 +5,7 @@ import {
     User,
     CreateUser,
     UpdateUser,
+    UserForSelect,
 } from "@/types/user";
 
 // ====================================
@@ -78,11 +79,19 @@ async function userFetch<T>(
 }
 
 // ====================================
-// USERS
+// USERS USERS 
 // ====================================
 
 export function getUsers() {
     return userFetch<User[]>("/users");
+}
+
+// ===================================
+// GET USERS SELECT
+// ===================================
+
+export function getUsersForSelect() {
+    return userFetch<UserForSelect[]>("/users/owner-list");
 }
 
 export function getUser(id: string) {

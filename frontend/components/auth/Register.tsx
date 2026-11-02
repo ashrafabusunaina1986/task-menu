@@ -18,7 +18,7 @@ interface ServerAuthError {
     message?: string | { reason?: string };
 }
 
-export default function CreateUser() {
+export default function RegisterUser() {
     const router = useRouter();
     const [authError, setAuthError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);

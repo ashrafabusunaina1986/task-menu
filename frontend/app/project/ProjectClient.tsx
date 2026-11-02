@@ -17,6 +17,8 @@ import type {
 import ProjectList from "@/components/project/ProjectList";
 import UserHeader from "@/components/user/UserHeader";
 import { Role } from "@/types/user";
+import { Session } from "next-auth";
+import TopNavigation from "@/components/navigation/TopNavigation";
 
 type ViewMode = "card" | "menu";
 type StatusFilter = "all" | ProjectStatus;
@@ -29,6 +31,7 @@ interface ProjectClientProps {
         image?: string | null;
         role?: Role | null
     };
+    session: Session
 }
 
 type OwnerRoleFilter =
@@ -76,6 +79,7 @@ const statusOptions: {
 export default function ProjectClient({
     userId,
     user,
+    session
 }: ProjectClientProps) {
     const router = useRouter();
 
@@ -254,11 +258,12 @@ export default function ProjectClient({
             </div>
 
             <div className="relative z-10">
-                <UserHeader user={user} />
-
+            
                 {/* هيكل التحكم والتصفية والفلترة التفاعلية للمشاريع */}
                 <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
                     <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-[#11111a] p-4 rounded-xl border border-gray-800/60 shadow-xl">
+
                         <div className="flex flex-wrap gap-3 w-full sm:w-auto">
                             <input
                                 type="text"

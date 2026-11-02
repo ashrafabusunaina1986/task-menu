@@ -1,78 +1,150 @@
 // components/TaskForm.tsx
-// 
-"use client";
+// "use client";
 
 import { CreateTask, Task, TaskPriority, TaskStatus } from "@/types/task";
-import React, { useState } from "react";
+import { UserForSelect } from "@/types/user";
+import { getUsersForSelect } from "@/lib/user/user";
+import React, { useState, useEffect } from "react";
 
 interface TaskFormProps {
     initialData?: Task;
-    onSubmit: (data: CreateTask) => void;
+    onSubmit: (data: CreateTask & { start_date: string | null; due_date: string | null; user_id: string }) => void;
+    currentDate: {
+        start?: string | null; // Unified primitive type string capitalization string
+        due?: string | null;
+    };
+    projectOwner: {
+        id: string;
+        role: string;
+    };
 }
 
 export default function TaskForm({
     initialData,
-    onSubmit
+    onSubmit,
+    currentDate,
+    projectOwner
 }: TaskFormProps) {
     const [title, setTitle] = useState(initialData?.title ?? "");
     const [description, setDescription] = useState(initialData?.description ?? "");
-    const [status, setStatus] = useState<TaskStatus>(initialData?.status ?? 'todo');
-    const [priority, setPriority] = useState<TaskPriority>(initialData?.priority ?? 'low');
+    const [status, setStatus] = useState<TaskStatus>(initialData?.status ?? "todo");
+    const [priority, setPriority] = useState<TaskPriority>(initialData?.priority ?? "low");
 
+    // Injected time framework states matching the newly established business parameters
+    const [startDate, setStartDate] = useState(initialData?.start_date?.slice(0, 10) ?? "");
+    const [dueDate, setDueDate] = useState(initialData?.due_date?.slice(0, 10) ?? "");
+    const [validationError, setValidationError] = useState<string | null>(null);
+
+    // Enforce administrative role verification bounds live
+    const isPrivilegedRole = projectOwner.role?.toLowerCase() === "admin" || projectOwner.role?.toLowerCase() === "manager";
+
+    // Assign automatically to oneself if ordinary user, or open up selection if admin/manager
+    const [assignedUserId, setAssignedUserId] = useState<string>(initialData?.user_id ?? (isPrivilegedRole ? "" : projectOwner.id));
+    const [availableUsers, setAvailableUsers] = useState<UserForSelect[]>([]);
+    const [loadingUsers, setLoadingUsers] = useState(isPrivilegedRole);
+
+    // Dynamic telemetry effect loop to sync available operators exclusively for authorized accounts
+    useEffect(() => {
+        if (!isPrivilegedRole) return;
+
+        async function fetchAvailableOperators() {
+            try {
+                setLoadingUsers(true);
+                const response = await getUsersForSelect();
+                const data = Array.isArray(response) ? response : (response as any)?.data || [];
+                setAvailableUsers(data);
+            } catch (error) {
+                console.error("Failed to load active system users for assignment dropdown:", error);
+            } finally {
+                setLoadingUsers(false);
+            }
+        }
+        void fetchAvailableOperators();
+    }, [isPrivilegedRole]);
+
+    // Handle re-synchronization when identity context fields finish loading
+    useEffect(() => {
+        if (!initialData?.user_id && !isPrivilegedRole) {
+            setAssignedUserId(projectOwner.id);
+        }
+    }, [isPrivilegedRole, projectOwner.id, initialData]);
     function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
+        setValidationError(null);
+
+        // 🛡️ Cross-Timeline Validation Gate: Verify task bounds are strictly contained within parent project timelines
+        if (startDate && dueDate) {
+            const taskStart = new Date(startDate).getTime();
+            const taskDue = new Date(dueDate).getTime();
+
+            if (taskDue < taskStart) {
+                setValidationError("Task delivery deadline (Due Date) cannot be chronologically earlier than its own start date.");
+                return;
+            }
+
+            if (currentDate.start) {
+                const projectStart = new Date(currentDate.start).getTime();
+                if (taskStart < projectStart) {
+                    setValidationError(`Task initialization date cannot be earlier than the global parent project start date (${currentDate.start}).`);
+                    return;
+                }
+            }
+
+            if (currentDate.due) {
+                const projectDue = new Date(currentDate.due).getTime();
+                if (taskDue > projectDue) {
+                    setValidationError(`Task completion deadline cannot extend beyond the global project target delivery date (${currentDate.due}).`);
+                    return;
+                }
+            }
+        }
+
         onSubmit({
             title,
             description,
             status,
-            priority
-        });
+            priority,
+            start_date: startDate || null,
+            due_date: dueDate || null,
+            user_id: isPrivilegedRole ? (assignedUserId || projectOwner.id) : projectOwner.id
+        } as any);
     }
 
-    // خيارات الحالات بلمسة نيون تفاعلية متناسقة مع كروت الحالات لـ Workora
     const statusOptions = [
         { value: "todo", label: "Todo", activeClass: "border-blue-500/40 bg-blue-500/10 text-blue-400" },
         { value: "in_progress", label: "In Progress", activeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400" },
         { value: "done", label: "Done", activeClass: "border-emerald-500/40 bg-emerald-500/10 text-emerald-400" }
     ] as const;
 
-    // خيارات مستويات الخطورة والأولوية البصرية الملونة
     const priorityOptions = [
         { value: "low", label: "Low", activeClass: "border-gray-500/30 bg-gray-500/5 text-gray-400" },
         { value: "medium", label: "Medium", activeClass: "border-purple-500/40 bg-purple-500/10 text-purple-400" },
         { value: "high", label: "High", activeClass: "border-rose-500/40 bg-rose-500/10 text-rose-400" }
     ] as const;
+
     return (
         <form
             onSubmit={handleSubmit}
-            className="
-                relative
-                overflow-hidden
-                space-y-8
-                rounded-3xl
-                border border-white/5
-                bg-[#0d0d16]/90
-                backdrop-blur-xl
-                shadow-[0_25px_80px_rgba(0,0,0,.8)]
-                p-6
-                md:p-8
-                w-full
-                transition-all
-                duration-300
-                hover:border-purple-500/15
-            "
+            className="relative overflow-hidden space-y-6 rounded-3xl border border-white/5 bg-[#0d0d16]/90 backdrop-blur-xl shadow-[0_25px_80px_rgba(0,0,0,.8)] p-6 md:p-8 w-full transition-all duration-300 hover:border-purple-500/15"
         >
-            {/* Ambient Ambient Purple Backdrop Glow */}
+            {/* Ambient Purple Backdrop Glow */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-24 bg-purple-600/5 blur-[100px] rounded-full pointer-events-none" />
 
-            {/* Task Title Input Grid Row */}
-            <div className="space-y-2">
+            {/* Inline Microsecond Time Validation Feedback Banner */}
+            {validationError && (
+                <div className="bg-rose-950/40 border border-rose-800 text-rose-200 p-4 rounded-xl text-xs font-semibold animate-pulse tracking-wide">
+                    ⚠️ Validation Guard: {validationError}
+                </div>
+            )}
+
+            {/* Task Title Input */}
+            <div className="space-y-1.5">
                 <label className="flex justify-between items-center text-xs font-bold text-gray-400 uppercase tracking-wider">
                     <span>Task Title <span className="text-rose-500">*</span></span>
-                    <span className="text-[10px] font-normal text-gray-600">{title.length} / 150</span>
+                    <span className="text-[10px] font-mono text-gray-600">{title.length} / 150</span>
                 </label>
                 <div className="relative group">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-purple-500 transition duration-150">📝</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 text-xs">📝</span>
                     <input
                         type="text"
                         value={title}
@@ -80,33 +152,40 @@ export default function TaskForm({
                         required
                         maxLength={150}
                         placeholder="Define clear task action item..."
-                        className="
-                            w-full
-                            rounded-xl
-                            border border-gray-800/80
-                            bg-[#141423]/60
-                            pl-11
-                            pr-4
-                            py-3.5
-                            text-sm
-                            text-white
-                            placeholder:text-gray-600
-                            outline-none
-                            transition
-                            duration-150
-                            focus:border-purple-500/50
-                            focus:ring-4
-                            focus:ring-purple-500/10
-                        "
+                        className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 pl-11 pr-4 py-3.5 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10"
                     />
                 </div>
             </div>
 
-            {/* Task Description Text Block */}
-            <div className="space-y-2">
+            {/* 👑 Privileged Assignee Selection Channel - Accessible for Admin/Managers only */}
+            {isPrivilegedRole && (
+                <div className="space-y-1.5 animate-fadeIn">
+                    <label className="block text-xs font-bold text-purple-400 uppercase tracking-wider">
+                        Assign Target Operator <span className="text-purple-500/50">[ Clearances Granted ]</span>
+                    </label>
+                    <div className="relative">
+                        <select
+                            value={assignedUserId}
+                            onChange={(e) => setAssignedUserId(e.target.value)}
+                            disabled={loadingUsers}
+                            className="w-full rounded-xl border border-purple-500/10 bg-[#141423]/60 px-4 py-3.5 text-sm text-white outline-none transition focus:border-purple-500/50 cursor-pointer appearance-none disabled:opacity-40"
+                        >
+                            <option value="">{loadingUsers ? "Synchronizing Active Clusters..." : "Select Active Executive Resource..."}</option>
+                            {availableUsers.map((operator) => (
+                                <option key={operator._id} value={operator._id} className="bg-[#0d0d16] text-white">
+                                    {operator.name} ({operator.email})
+                                </option>
+                            ))}
+                        </select>
+                        <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-purple-500 text-xs">▼</div>
+                    </div>
+                </div>
+            )}
+            {/* Task Description Context Area */}
+            <div className="space-y-1.5">
                 <label className="flex justify-between items-center text-xs font-bold text-gray-400 uppercase tracking-wider">
                     <span>Task Context & Description</span>
-                    <span className="text-[10px] font-normal text-gray-600">{description.length} / 1000</span>
+                    <span className="text-[10px] font-mono text-gray-600">{description.length} / 1000</span>
                 </label>
                 <textarea
                     rows={4}
@@ -114,26 +193,10 @@ export default function TaskForm({
                     onChange={(e) => setDescription(e.target.value)}
                     maxLength={1000}
                     placeholder="Break down execution details, prerequisites, or required criteria..."
-                    className="
-                        w-full
-                        rounded-xl
-                        border border-gray-800/80
-                        bg-[#141423]/60
-                        px-4
-                        py-3.5
-                        text-sm
-                        text-white
-                        placeholder:text-gray-600
-                        outline-none
-                        transition
-                        duration-150
-                        focus:border-purple-500/50
-                        focus:ring-4
-                        focus:ring-purple-500/10
-                        resize-none
-                    "
+                    className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 px-4 py-3.5 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 resize-none"
                 />
             </div>
+
             {/* Custom Interactive Status Grid Badge Row */}
             <div className="space-y-2">
                 <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Operational Status</label>
@@ -143,22 +206,7 @@ export default function TaskForm({
                             key={opt.value}
                             type="button"
                             onClick={() => setStatus(opt.value)}
-                            className={`
-                                py-2.5
-                                px-3
-                                text-xs
-                                font-semibold
-                                rounded-xl
-                                border
-                                transition-all
-                                duration-150
-                                text-center
-                                cursor-pointer
-                                ${status === opt.value 
-                                    ? opt.activeClass 
-                                    : "border-gray-800 bg-[#141423]/30 text-gray-400 hover:border-gray-700 hover:bg-[#141423]/60"
-                                }
-                            `}
+                            className={`py-2.5 px-3 text-xs font-semibold rounded-xl border transition-all duration-150 text-center cursor-pointer ${status === opt.value ? opt.activeClass : "border-gray-800 bg-[#141423]/30 text-gray-400 hover:border-gray-700 hover:bg-[#141423]/60"}`}
                         >
                             {opt.label}
                         </button>
@@ -175,23 +223,7 @@ export default function TaskForm({
                             key={opt.value}
                             type="button"
                             onClick={() => setPriority(opt.value)}
-                            className={`
-                                py-2.5
-                                text-xs
-                                font-bold
-                                rounded-xl
-                                border
-                                uppercase
-                                tracking-wider
-                                transition-all
-                                duration-150
-                                text-center
-                                cursor-pointer
-                                ${priority === opt.value 
-                                    ? opt.activeClass 
-                                    : "border-gray-800 bg-[#141423]/30 text-gray-400 hover:border-gray-700 hover:bg-[#141423]/60"
-                                }
-                            `}
+                            className={`py-2.5 text-xs font-bold rounded-xl border uppercase tracking-wider transition-all duration-150 cursor-pointer ${priority === opt.value ? opt.activeClass : "border-gray-800 bg-[#141423]/30 text-gray-400 hover:border-gray-700 hover:bg-[#141423]/60"}`}
                         >
                             {opt.label}
                         </button>
@@ -199,32 +231,35 @@ export default function TaskForm({
                 </div>
             </div>
 
-            {/* Form Actions Button Control Panel */}
-            <div className="pt-4 border-t border-gray-800/40">
+            {/* 📅 Injected: Task Timeframe Scheduling Matrices Bound Loops */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Task Activation Start</label>
+                    <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 px-4 py-3.5 text-xs text-white outline-none transition focus:border-purple-500/50 uppercase font-mono cursor-pointer"
+                    />
+                </div>
+                <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Task Expiration Deadline</label>
+                    <input
+                        type="date"
+                        value={dueDate}
+                        onChange={(e) => setDueDate(e.target.value)}
+                        className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 px-4 py-3.5 text-xs text-white outline-none transition focus:border-purple-500/50 uppercase font-mono cursor-pointer"
+                    />
+                </div>
+            </div>
+
+            {/* Form Submission Control Button */}
+            <div className="pt-4 border-t border-gray-900/60 flex justify-end">
                 <button
                     type="submit"
-                    className="
-                        w-full
-                        py-3.5
-                        rounded-xl
-                        text-sm
-                        font-bold
-                        text-white
-                        bg-gradient-to-r
-                        from-purple-600
-                        to-blue-600
-                        shadow-lg
-                        shadow-purple-600/20
-                        hover:from-purple-500
-                        hover:to-blue-500
-                        active:scale-[0.99]
-                        transition-all
-                        duration-150
-                        cursor-pointer
-                        text-center
-                    "
+                    className="w-full sm:w-auto px-8 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider text-white bg-purple-600 hover:bg-purple-700 active:scale-[0.99] shadow-lg shadow-purple-600/20 transition duration-150 cursor-pointer text-center"
                 >
-                    {initialData ? "Save Task Modifications" : "Deploy Task Instance"}
+                    {initialData ? "Apply Mutation Log" : "Commit New Task Unit"}
                 </button>
             </div>
         </form>

@@ -9,14 +9,18 @@ import UserHeader from "@/components/user/UserHeader";
 import { TiDocument } from "react-icons/ti";
 import { IoMenu } from "react-icons/io5";
 import { FiSearch, FiRefreshCw } from "react-icons/fi";
+import { Session } from "next-auth";
+import TopNavigation from "@/components/navigation/TopNavigation";
 
 type TasksClientProps = {
     user: {
         name?: string | null;
         email?: string | null;
         image?: string | null;
+        role?: string | null;
     };
     project_id: string;
+    session: Session;
 };
 
 type ViewMode = "card" | "menu";
@@ -29,7 +33,7 @@ const taskTabs: { label: string; value: TaskStatusTab }[] = [
     { label: "Completed", value: "done" },
 ];
 
-export default function TasksClient({ user, project_id }: TasksClientProps) {
+export default function TasksClient({ user, project_id, session }: TasksClientProps) {
     const router = useRouter();
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
@@ -149,9 +153,6 @@ export default function TasksClient({ user, project_id }: TasksClientProps) {
                 <div className="absolute -left-40 top-20 h-96 w-96 rounded-full bg-blue-700/5 blur-[150px]" />
                 <div className="absolute -right-20 top-40 h-[500px] w-[500px] rounded-full bg-purple-700/10 blur-[180px]" />
             </div>
-
-            <UserHeader user={user} logout={handleLogout} />
-
             <div className="relative mx-auto mt-6 w-[94%] max-w-7xl rounded-3xl border border-white/5 bg-[#0d0d16]/90 p-5 shadow-[0_30px_90px_rgba(0,0,0,.8)] backdrop-blur-xl sm:p-8 space-y-6">
 
                 {/* Page Heading & Trigger Controls */}
@@ -168,13 +169,13 @@ export default function TasksClient({ user, project_id }: TasksClientProps) {
                         </p>
                     </div>
 
-                    <button
+                    {!error && <button
                         type="button"
                         onClick={() => router.push(`/tasks/create?project_id=${encodeURIComponent(project_id)}`)}
                         className="rounded-xl bg-purple-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-purple-600/20 transition hover:bg-purple-700 active:scale-[0.98]"
                     >
                         + Deploy Task
-                    </button>
+                    </button>}
                 </div>
 
                 {/* Exception Error Handling Terminal Layout */}

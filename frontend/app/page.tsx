@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { auth } from "@/auth";
-import TopNavigation from "@/components/navigation/TopNavigation";
 import {
     FiArrowRight,
     FiShield,
@@ -63,14 +62,6 @@ export default async function HomePage() {
                             "linear-gradient(rgba(255,255,255,.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.3) 1px, transparent 1px)",
                         backgroundSize: "40px 40px",
                     }}
-                />
-            </div>
-
-            {/* Navigation Header Gate */}
-            <div className="relative z-50">
-                <TopNavigation
-                    isAuthenticated={isAuthenticated}
-                    role={role}
                 />
             </div>
             {/* Hero Interactive Main Segment */}

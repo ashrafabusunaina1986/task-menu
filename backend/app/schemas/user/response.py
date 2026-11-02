@@ -9,6 +9,7 @@ from pydantic import (
     EmailStr,
     Field
 )
+from app.security.permissions.roles import Role
 
 
 class UserResponse(BaseModel):
@@ -30,4 +31,20 @@ class UserResponse(BaseModel):
     model_config = ConfigDict(
         populate_by_name=True,
         extra="forbid"
+    )
+
+
+class UserResponseForSelect(BaseModel):
+    id: str = Field(
+        alias="_id"
+    )
+
+    name: str
+    email: EmailStr
+    role: Role
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+        extra="forbid",
+        from_attributes=True
     )

@@ -17,22 +17,27 @@ from app.core.container.task import get_task_service
 router = APIRouter()
 
 
-@router.get(
-    "/",
-    response_model=list[TaskResponse]
-)
+@router.get("/", response_model=list[TaskResponse])
 async def get_tasks(
     project_id: str,
     service: TaskService = Depends(get_task_service),
     user: User = Depends(get_current_user_dependency),
     security: DependencyService = Depends(get_security_service)
 ):
+    """
+    Exposes an isolated database routing channel to query and pull tasks metadata clusters.
+    Enforces active permission checking and delegates operational queries based on user roles.
+    """
+    # 1. Access Validation Gate: Enforce global permission matrix reading permissions
     security.require_permission_dependency.require_permission(
         user=user,
         permission=Permission.TASKS_READ
     )
+
+    # 2. Pipeline Delegation: Forward execution down to the service validation layers
     return await service.get_all(
-        user=user, project_id=project_id
+        user=user,
+        project_id=project_id
     )
 
 

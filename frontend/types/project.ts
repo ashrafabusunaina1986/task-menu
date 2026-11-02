@@ -9,7 +9,7 @@ export type ProjectStatus =
     | "completed"
     | "cancelled"
 
-    
+
 export type ProjectPriority =
     | "low"
     | "medium"
@@ -46,7 +46,9 @@ export interface ProjectRead {
     priority?: ProjectPriority | null
 }
 
-export interface ProjectUpdate extends Partial<ProjectCreate> { }
+export interface ProjectUpdate extends Partial<ProjectCreate> {
+    owner_role: string | null
+}
 
 
 

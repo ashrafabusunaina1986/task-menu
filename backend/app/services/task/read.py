@@ -16,9 +16,9 @@ class TaskReadService(TaskServiceBase):
         user: User,
         project_id: str
     ) -> list[dict]:
-
-        await self._check_project_access(user=user, project_id=project_id)
-
+        await self._check_owner_project(
+            project_id=project_id
+        )
         if user.role == Role.ADMIN:
             return await self.repository.get_all(project_id=project_id)
 
@@ -33,7 +33,6 @@ class TaskReadService(TaskServiceBase):
         user: User,
         project_id: str
     ) -> dict:
-        await self._check_project_access(user=user, project_id=project_id)
 
         if user.role == Role.ADMIN:
             task = await self.repository.get_by_id(

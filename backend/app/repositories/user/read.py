@@ -20,6 +20,22 @@ class UserReadRepository:
 
         return users
 
+    async def get_users_for_select(self):
+        """
+        Optimized database matrix to fetch verified infrastructure operators
+        strictly matching the mapped Pydantic validation schema properties.
+        """
+        users = await get_users_collection().find(
+            {"is_active": True, "is_verified": True},
+            {"_id": 1, "name": 1, "email": 1,"role":1}
+        ).to_list(length=500)
+        result: list = []
+        for user in users:
+            user["_id"] = str(user["_id"])
+            
+            result.append(user)
+        return result
+
     async def get_by_id(self, user_id: str):
         try:
             user = await get_users_collection().find_one(

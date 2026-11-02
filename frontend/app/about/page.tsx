@@ -76,13 +76,6 @@ export default async function AboutPage() {
                 <div className="absolute right-[-100px] top-20 h-[700px] w-[700px] rounded-full bg-blue-600/[0.03] blur-[180px]" />
             </div>
 
-            {/* Navigation Header */}
-            <div className="relative z-50">
-                <TopNavigation
-                    isAuthenticated={!!session}
-                    role={role}
-                />
-            </div>
             {/* Main Center Area Panel Grid */}
             <div className="relative z-10 mx-auto max-w-7xl w-[94%] mt-6 sm:mt-10 space-y-8 animate-fadeIn">
 

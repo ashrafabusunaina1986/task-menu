@@ -49,3 +49,36 @@ export async function getProject(
     }
     return res.json() as Promise<Project | null>
 }
+
+export async function getDateStartAndDueProject(
+    data: ProjectRead
+): Promise<{ start_date: string, due_date: string } | null> {
+    const session = await auth()
+    if (!session?.accessToken) {
+        throw new Error("Not authenticated")
+    }
+
+    const res = await fetch(
+        `${SERVER_API}/project/get-project`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${session.accessToken}`
+            },
+            body: JSON.stringify(data),
+            cache: 'no-store'
+        }
+    )
+
+    if (res.status === 400) {
+        return null
+    }
+
+    if (!res.ok) {
+        const message = await res.text()
+
+        throw new Error(message || `Request failed with status ${res.status}`)
+    }
+    return res.json() as Promise<{ start_date: string, due_date: string } | null>
+}

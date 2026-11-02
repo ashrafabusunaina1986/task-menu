@@ -11,6 +11,8 @@ class ProjectCreate(ProjectBase):
         min_length=1
     )
 
+    owner_role: str | None = None
+
     model_config = ConfigDict(
         str_strip_whitespace=True,
         extra="forbid"

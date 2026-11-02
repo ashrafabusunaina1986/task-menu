@@ -11,5 +11,5 @@ export default async function ViewUsersPage() {
     if (!session.user) redirect("/login")
 
 
-    return <Users user={{ ...session.user }} />
+    return <Users user={{ ...session.user }} session={session} />
 }
