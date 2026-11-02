@@ -1,16 +1,17 @@
 // components/TaskForm.tsx
-// "use client";
+"use client";
 
 import { CreateTask, Task, TaskPriority, TaskStatus } from "@/types/task";
 import { UserForSelect } from "@/types/user";
 import { getUsersForSelect } from "@/lib/user/user";
+import { taskCreateSchema, taskUpdateSchema } from "@/schemas/task"; // Injected: Core security validation contracts
 import React, { useState, useEffect } from "react";
 
 interface TaskFormProps {
     initialData?: Task;
     onSubmit: (data: CreateTask & { start_date: string | null; due_date: string | null; user_id: string }) => void;
     currentDate: {
-        start?: string | null; // Unified primitive type string capitalization string
+        start?: string | null;
         due?: string | null;
     };
     projectOwner: {
@@ -30,20 +31,19 @@ export default function TaskForm({
     const [status, setStatus] = useState<TaskStatus>(initialData?.status ?? "todo");
     const [priority, setPriority] = useState<TaskPriority>(initialData?.priority ?? "low");
 
-    // Injected time framework states matching the newly established business parameters
     const [startDate, setStartDate] = useState(initialData?.start_date?.slice(0, 10) ?? "");
     const [dueDate, setDueDate] = useState(initialData?.due_date?.slice(0, 10) ?? "");
+    
+    // Injected: State parameters to map field-specific validation alarms from Zod payload checks
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
     const [validationError, setValidationError] = useState<string | null>(null);
 
-    // Enforce administrative role verification bounds live
     const isPrivilegedRole = projectOwner.role?.toLowerCase() === "admin" || projectOwner.role?.toLowerCase() === "manager";
 
-    // Assign automatically to oneself if ordinary user, or open up selection if admin/manager
     const [assignedUserId, setAssignedUserId] = useState<string>(initialData?.user_id ?? (isPrivilegedRole ? "" : projectOwner.id));
     const [availableUsers, setAvailableUsers] = useState<UserForSelect[]>([]);
     const [loadingUsers, setLoadingUsers] = useState(isPrivilegedRole);
 
-    // Dynamic telemetry effect loop to sync available operators exclusively for authorized accounts
     useEffect(() => {
         if (!isPrivilegedRole) return;
 
@@ -62,15 +62,16 @@ export default function TaskForm({
         void fetchAvailableOperators();
     }, [isPrivilegedRole]);
 
-    // Handle re-synchronization when identity context fields finish loading
     useEffect(() => {
         if (!initialData?.user_id && !isPrivilegedRole) {
             setAssignedUserId(projectOwner.id);
         }
     }, [isPrivilegedRole, projectOwner.id, initialData]);
+
     function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         setValidationError(null);
+        setFieldErrors({});
 
         // 🛡️ Cross-Timeline Validation Gate: Verify task bounds are strictly contained within parent project timelines
         if (startDate && dueDate) {
@@ -99,14 +100,39 @@ export default function TaskForm({
             }
         }
 
-        onSubmit({
+        const computedUserId = isPrivilegedRole ? (assignedUserId || projectOwner.id) : projectOwner.id;
+        const payload = {
             title,
-            description,
+            description: description || null,
             status,
             priority,
             start_date: startDate || null,
             due_date: dueDate || null,
-            user_id: isPrivilegedRole ? (assignedUserId || projectOwner.id) : projectOwner.id
+            user_id: computedUserId,
+            project_id: "placeholder_verification_id" // Satisfy schema definition prior to submission wrapper logic
+        };
+
+        // ✅ FIXED: Select target Zod contract dynamically based on execution context properties
+        const targetSchema = initialData ? taskUpdateSchema : taskCreateSchema;
+        const resultSchema = targetSchema.safeParse(payload);
+
+        if (!resultSchema.success) {
+            const flattenedErrors = resultSchema.error.flatten();
+            setFieldErrors(flattenedErrors.fieldErrors as any);
+            if (flattenedErrors.formErrors.length > 0) {
+                setValidationError(flattenedErrors.formErrors[0]);
+            }
+            return;
+        }
+
+        onSubmit({
+            title,
+            description: description || null,
+            status,
+            priority,
+            start_date: startDate || null,
+            due_date: dueDate || null,
+            user_id: computedUserId
         } as any);
     }
 
@@ -121,7 +147,6 @@ export default function TaskForm({
         { value: "medium", label: "Medium", activeClass: "border-purple-500/40 bg-purple-500/10 text-purple-400" },
         { value: "high", label: "High", activeClass: "border-rose-500/40 bg-rose-500/10 text-rose-400" }
     ] as const;
-
     return (
         <form
             onSubmit={handleSubmit}
@@ -131,9 +156,9 @@ export default function TaskForm({
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-24 bg-purple-600/5 blur-[100px] rounded-full pointer-events-none" />
 
             {/* Inline Microsecond Time Validation Feedback Banner */}
-            {validationError && (
+            {(validationError || fieldErrors.due_date) && (
                 <div className="bg-rose-950/40 border border-rose-800 text-rose-200 p-4 rounded-xl text-xs font-semibold animate-pulse tracking-wide">
-                    ⚠️ Validation Guard: {validationError}
+                    ⚠️ Validation Guard: {validationError || fieldErrors.due_date?.[0]}
                 </div>
             )}
 
@@ -149,12 +174,11 @@ export default function TaskForm({
                         type="text"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        required
-                        maxLength={150}
                         placeholder="Define clear task action item..."
                         className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 pl-11 pr-4 py-3.5 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10"
                     />
                 </div>
+                {fieldErrors.title && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.title?.[0]}</p>}
             </div>
 
             {/* 👑 Privileged Assignee Selection Channel - Accessible for Admin/Managers only */}
@@ -168,7 +192,7 @@ export default function TaskForm({
                             value={assignedUserId}
                             onChange={(e) => setAssignedUserId(e.target.value)}
                             disabled={loadingUsers}
-                            className="w-full rounded-xl border border-purple-500/10 bg-[#141423]/60 px-4 py-3.5 text-sm text-white outline-none transition focus:border-purple-500/50 cursor-pointer appearance-none disabled:opacity-40"
+                            className="w-full rounded-xl border border-purple-500/10 bg-[#141423]/60 px-4 py-3.5 text-sm text-white outline-none transition focus:border-purple-500/50 cursor-pointer appearance-none skiptranslate"
                         >
                             <option value="">{loadingUsers ? "Synchronizing Active Clusters..." : "Select Active Executive Resource..."}</option>
                             {availableUsers.map((operator) => (
@@ -179,8 +203,10 @@ export default function TaskForm({
                         </select>
                         <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-purple-500 text-xs">▼</div>
                     </div>
+                    {fieldErrors.user_id && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.user_id?.[0]}</p>}
                 </div>
             )}
+
             {/* Task Description Context Area */}
             <div className="space-y-1.5">
                 <label className="flex justify-between items-center text-xs font-bold text-gray-400 uppercase tracking-wider">
@@ -191,10 +217,10 @@ export default function TaskForm({
                     rows={4}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    maxLength={1000}
                     placeholder="Break down execution details, prerequisites, or required criteria..."
                     className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 px-4 py-3.5 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 resize-none"
                 />
+                {fieldErrors.description && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.description?.[0]}</p>}
             </div>
 
             {/* Custom Interactive Status Grid Badge Row */}
@@ -231,7 +257,7 @@ export default function TaskForm({
                 </div>
             </div>
 
-            {/* 📅 Injected: Task Timeframe Scheduling Matrices Bound Loops */}
+            {/* Injected: Task Timeframe Scheduling Matrices Bound Loops */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                     <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Task Activation Start</label>
@@ -241,6 +267,7 @@ export default function TaskForm({
                         onChange={(e) => setStartDate(e.target.value)}
                         className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 px-4 py-3.5 text-xs text-white outline-none transition focus:border-purple-500/50 uppercase font-mono cursor-pointer"
                     />
+                    {fieldErrors.start_date && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.start_date?.[0]}</p>}
                 </div>
                 <div className="space-y-1.5">
                     <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Task Expiration Deadline</label>
