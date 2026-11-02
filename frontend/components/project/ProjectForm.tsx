@@ -9,7 +9,7 @@ import {
 } from "@/types/project";
 import { UserForSelect } from "@/types/user";
 import { getUsersForSelect } from "@/lib/user/user";
-import { projectCreateSchema, projectUpdateSchema } from "@/schemas/project"; // Injected: Core security verification contracts
+import { projectCreateSchema, projectUpdateSchema } from "@/schemas/project";
 import React, { useState, useEffect } from "react";
 
 interface ProjectFormProps {
@@ -33,7 +33,6 @@ export default function ProjectForm({
     const [startDate, setStartDate] = useState(initialData?.start_date?.slice(0, 10) ?? "");
     const [dueDate, setDueDate] = useState(initialData?.due_date?.slice(0, 10) ?? "");
 
-    // Zod interface client error state telemetry mapping
     const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
     const [globalValidationError, setGlobalValidationError] = useState<string | null>(null);
 
@@ -85,13 +84,14 @@ export default function ProjectForm({
         setOwnerRole(selectedUser?.role || "user");
     };
 
-    function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    // ✅ FIXED: Asynchronous form transaction filter ensuring strict duplicate name checks against MongoDB
+    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         setFieldErrors({});
         setGlobalValidationError(null);
 
         const payload = {
-            name: name,
+            name: name.trim(),
             description: description || null,
             status: status,
             priority: priority,
@@ -99,19 +99,34 @@ export default function ProjectForm({
             due_date: dueDate || null
         };
 
-        // ✅ FIXED: Select validation contract scheme dynamically based on create or update mutations
         const targetSchema = initialData ? projectUpdateSchema : projectCreateSchema;
         const resultSchema = targetSchema.safeParse(payload);
 
         if (!resultSchema.success) {
             const flattenedErrors = resultSchema.error.flatten();
             setFieldErrors(flattenedErrors.fieldErrors as any);
-            
-            // Extract root timeline exceptions if present inside global arrays
             if (flattenedErrors.formErrors.length > 0) {
                 setGlobalValidationError(flattenedErrors.formErrors[0]);
             }
             return;
+        }
+
+        // 🔒 ANTI-DUPLICATE GUARD GATE: Check database registries dynamically if name is altered during creation
+        if (!initialData || (initialData && initialData.name.toLowerCase() !== payload.name.toLowerCase())) {
+            try {
+                const response = await fetch(`/api/project/check-name?name=${encodeURIComponent(payload.name)}`);
+                const checkData = await response.json();
+
+                if (checkData?.exists) {
+                    setFieldErrors(prev => ({
+                        ...prev,
+                        name: ["This project name already exists in the database. Identifiers must be entirely unique."]
+                    }));
+                    return;
+                }
+            } catch (err) {
+                console.error("Unique index telemetry failure:", err);
+            }
         }
 
         onSubmit({
@@ -119,9 +134,7 @@ export default function ProjectForm({
             owner_id: isAdmin ? (ownerId.trim() !== "" ? ownerId : null) : currentUser.id,
             owner_role: isAdmin ? (ownerRole.trim() !== "" ? ownerRole : null) : currentUser.role,
         } as any);
-    }
-
-    const statusOptions = [
+    } const statusOptions = [
         { value: "planned", label: "Planned", activeClass: "border-blue-500/40 bg-blue-500/10 text-blue-400" },
         { value: "in_progress", label: "In Progress", activeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400" },
         { value: "on_hold", label: "On Hold", activeClass: "border-purple-500/40 bg-purple-500/10 text-purple-400" },
@@ -149,14 +162,13 @@ export default function ProjectForm({
                 <p className="text-xs text-gray-500 mt-1">Configure workspace parameters, access roles, and production timelines.</p>
             </div>
 
-            {/* Inline Timeline Exception Alert Panel Layout */}
-            {(globalValidationError || fieldErrors.due_date) && (
+            {globalValidationError && (
                 <div className="bg-rose-950/40 border border-rose-800/80 text-rose-200 p-4 rounded-xl text-xs font-semibold animate-pulse tracking-wide">
-                    ⚠️ Validation Error: {globalValidationError || fieldErrors.due_date?.[0]}
+                    ⚠️ Validation Error: {globalValidationError}
                 </div>
             )}
 
-            {/* Project Name */}
+            {/* Project Name Group */}
             <div className="space-y-1.5">
                 <label className="flex justify-between items-center text-xs font-bold text-gray-400 uppercase tracking-wider">
                     <span>Project Name <span className="text-rose-500">*</span></span>
@@ -168,15 +180,14 @@ export default function ProjectForm({
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        maxLength={150}
                         placeholder="Enter an intuitive identifier name..."
                         className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 pl-11 pr-4 py-3.5 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10"
                     />
                 </div>
-                {fieldErrors.name && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.name[0]}</p>}
+                {/* Dynamic Field Error Response Layout for Duplicates */}
+                {fieldErrors.name && <p className="text-[11px] text-rose-400 font-medium mt-1 animate-pulse">⚠️ {fieldErrors.name[0]}</p>}
             </div>
 
-            {/* 👑 ADMIN DROPDOWN: Attached dual-state sync maps */}
             {isAdmin && (
                 <div className="space-y-1.5 animate-fadeIn">
                     <label className="block text-xs font-bold text-purple-400 uppercase tracking-wider">
@@ -187,7 +198,7 @@ export default function ProjectForm({
                             value={ownerId}
                             onChange={(e) => handleOwnerChange(e.target.value)}
                             disabled={loadingOwners}
-                            className="w-full rounded-xl border border-purple-500/10 bg-[#141423]/60 px-4 py-3.5 text-sm text-white outline-none transition focus:border-purple-500/50 cursor-pointer appearance-none disabled:opacity-40"
+                            className="w-full rounded-xl border border-purple-500/10 bg-[#141423]/60 px-4 py-3.5 text-sm text-white outline-none transition focus:border-purple-500/50 cursor-pointer appearance-none"
                         >
                             <option value="">Leave Unassigned (No Owner Node)...</option>
                             {owners.map((owner) => (
@@ -211,11 +222,9 @@ export default function ProjectForm({
                     rows={4}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    maxLength={2000}
                     placeholder="Provide contextual goals, repositories, infrastructure requirements..."
                     className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 px-4 py-3.5 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 resize-none"
                 />
-                {fieldErrors.description && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.description[0]}</p>}
             </div>
 
             {/* Flow Status Options */}
@@ -262,7 +271,6 @@ export default function ProjectForm({
                         onChange={(e) => setStartDate(e.target.value)}
                         className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 px-4 py-3.5 text-xs text-white outline-none transition focus:border-purple-500/50 uppercase font-mono cursor-pointer"
                     />
-                    {fieldErrors.start_date && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.start_date[0]}</p>}
                 </div>
                 <div className="space-y-1.5">
                     <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Target Delivery Deadline</label>
@@ -287,3 +295,4 @@ export default function ProjectForm({
         </form>
     );
 }
+
