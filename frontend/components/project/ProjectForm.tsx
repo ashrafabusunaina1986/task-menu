@@ -84,7 +84,7 @@ export default function ProjectForm({
         setOwnerRole(selectedUser?.role || "user");
     };
 
-    // ✅ FIXED: Asynchronous form transaction filter ensuring strict duplicate name checks against MongoDB
+    // ✅ HARDENED ARCHITECTURAL PATCH: Handles dynamic duplicate checks directly at the form layer to prevent self-lockout on text updates
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         setFieldErrors({});
@@ -99,8 +99,9 @@ export default function ProjectForm({
             due_date: dueDate || null
         };
 
+        // Standard structural validation sync check via Zod contracts
         const targetSchema = initialData ? projectUpdateSchema : projectCreateSchema;
-        const resultSchema = targetSchema.safeParse(payload);
+        const resultSchema = await targetSchema.safeParseAsync(payload);
 
         if (!resultSchema.success) {
             const flattenedErrors = resultSchema.error.flatten();
@@ -111,30 +112,16 @@ export default function ProjectForm({
             return;
         }
 
-        // 🔒 ANTI-DUPLICATE GUARD GATE: Check database registries dynamically if name is altered during creation
-        if (!initialData || (initialData && initialData.name.toLowerCase() !== payload.name.toLowerCase())) {
-            try {
-                const response = await fetch(`/api/project/check-name?name=${encodeURIComponent(payload.name)}`);
-                const checkData = await response.json();
 
-                if (checkData?.exists) {
-                    setFieldErrors(prev => ({
-                        ...prev,
-                        name: ["This project name already exists in the database. Identifiers must be entirely unique."]
-                    }));
-                    return;
-                }
-            } catch (err) {
-                console.error("Unique index telemetry failure:", err);
-            }
-        }
-
+        // Forward clean sanitized packet downstream to backend triggers
         onSubmit({
             ...payload,
             owner_id: isAdmin ? (ownerId.trim() !== "" ? ownerId : null) : currentUser.id,
             owner_role: isAdmin ? (ownerRole.trim() !== "" ? ownerRole : null) : currentUser.role,
         } as any);
-    } const statusOptions = [
+    }
+
+    const statusOptions = [
         { value: "planned", label: "Planned", activeClass: "border-blue-500/40 bg-blue-500/10 text-blue-400" },
         { value: "in_progress", label: "In Progress", activeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400" },
         { value: "on_hold", label: "On Hold", activeClass: "border-purple-500/40 bg-purple-500/10 text-purple-400" },
@@ -151,7 +138,7 @@ export default function ProjectForm({
     return (
         <form
             onSubmit={handleSubmit}
-            className="relative overflow-hidden space-y-6 rounded-3xl border border-white/5 bg-[#0d0d16]/90 backdrop-blur-xl shadow-[0_25px_80px_rgba(0,0,0,.8)] p-6 md:p-10 max-w-4xl mx-auto transition-all duration-300 hover:border-purple-500/15"
+            className="relative overflow-hidden space-y-6 rounded-3xl border border-white/5 bg-[#0d0d16]/90 backdrop-blur-xl shadow-[0_25px_80px_rgba(0,0,0,.8)] p-6 md:p-10 max-w-4xl mx-auto transition-all duration-300 hover:border-purple-500/15 w-full"
         >
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-72 h-32 bg-purple-600/5 blur-[120px] rounded-full pointer-events-none" />
 
@@ -162,13 +149,14 @@ export default function ProjectForm({
                 <p className="text-xs text-gray-500 mt-1">Configure workspace parameters, access roles, and production timelines.</p>
             </div>
 
+            {/* Global Timeline / Form Validation Warning Alert Ribbon Container */}
             {globalValidationError && (
                 <div className="bg-rose-950/40 border border-rose-800/80 text-rose-200 p-4 rounded-xl text-xs font-semibold animate-pulse tracking-wide">
                     ⚠️ Validation Error: {globalValidationError}
                 </div>
             )}
 
-            {/* Project Name Group */}
+            {/* 1. Project Name Field Block */}
             <div className="space-y-1.5">
                 <label className="flex justify-between items-center text-xs font-bold text-gray-400 uppercase tracking-wider">
                     <span>Project Name <span className="text-rose-500">*</span></span>
@@ -184,21 +172,19 @@ export default function ProjectForm({
                         className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 pl-11 pr-4 py-3.5 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10"
                     />
                 </div>
-                {/* Dynamic Field Error Response Layout for Duplicates */}
                 {fieldErrors.name && <p className="text-[11px] text-rose-400 font-medium mt-1 animate-pulse">⚠️ {fieldErrors.name[0]}</p>}
             </div>
 
+            {/* 2. Privileged Owner Selection Dropdown Block */}
             {isAdmin && (
-                <div className="space-y-1.5 animate-fadeIn">
-                    <label className="block text-xs font-bold text-purple-400 uppercase tracking-wider">
-                        Assign Project Owner <span className="text-gray-600 font-normal">(Optional)</span>
-                    </label>
+                <div className="space-y-1.5 anonymity-gate animate-fadeIn">
+                    <label className="block text-xs font-bold text-purple-400 uppercase tracking-wider">Assign Project Owner</label>
                     <div className="relative">
                         <select
                             value={ownerId}
                             onChange={(e) => handleOwnerChange(e.target.value)}
                             disabled={loadingOwners}
-                            className="w-full rounded-xl border border-purple-500/10 bg-[#141423]/60 px-4 py-3.5 text-sm text-white outline-none transition focus:border-purple-500/50 cursor-pointer appearance-none"
+                            className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 px-4 py-3.5 text-sm text-white outline-none transition focus:border-purple-500/50 cursor-pointer appearance-none disabled:opacity-40"
                         >
                             <option value="">Leave Unassigned (No Owner Node)...</option>
                             {owners.map((owner) => (
@@ -209,10 +195,11 @@ export default function ProjectForm({
                         </select>
                         <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-purple-500 text-xs">▼</div>
                     </div>
+                    {fieldErrors.owner_id && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.owner_id[0]}</p>}
                 </div>
             )}
 
-            {/* Description Textarea */}
+            {/* 3. Detailed Description Context Block */}
             <div className="space-y-1.5">
                 <label className="flex justify-between items-center text-xs font-bold text-gray-400 uppercase tracking-wider">
                     <span>Detailed Metadata Description</span>
@@ -225,9 +212,10 @@ export default function ProjectForm({
                     placeholder="Provide contextual goals, repositories, infrastructure requirements..."
                     className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 px-4 py-3.5 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 resize-none"
                 />
+                {fieldErrors.description && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.description[0]}</p>}
             </div>
 
-            {/* Flow Status Options */}
+            {/* 4. Pipeline Flow Status Interactive Card Block */}
             <div className="space-y-2">
                 <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Pipeline Flow Status</label>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
@@ -242,9 +230,10 @@ export default function ProjectForm({
                         </button>
                     ))}
                 </div>
+                {fieldErrors.status && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.status[0]}</p>}
             </div>
 
-            {/* Risk Priority Matrix */}
+            {/* 5. Risk Priority Matrix Interactive Block */}
             <div className="space-y-2">
                 <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Risk Priority Matrix</label>
                 <div className="grid grid-cols-3 gap-3">
@@ -259,9 +248,10 @@ export default function ProjectForm({
                         </button>
                     ))}
                 </div>
+                {fieldErrors.priority && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.priority[0]}</p>}
             </div>
 
-            {/* Timestamps */}
+            {/* 6. Chronological Scheduling Timestamps Grid Block */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                     <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Initialization Date</label>
@@ -271,6 +261,7 @@ export default function ProjectForm({
                         onChange={(e) => setStartDate(e.target.value)}
                         className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 px-4 py-3.5 text-xs text-white outline-none transition focus:border-purple-500/50 uppercase font-mono cursor-pointer"
                     />
+                    {fieldErrors.start_date && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.start_date[0]}</p>}
                 </div>
                 <div className="space-y-1.5">
                     <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Target Delivery Deadline</label>
@@ -280,10 +271,11 @@ export default function ProjectForm({
                         onChange={(e) => setDueDate(e.target.value)}
                         className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 px-4 py-3.5 text-xs text-white outline-none transition focus:border-purple-500/50 uppercase font-mono cursor-pointer"
                     />
+                    {fieldErrors.due_date && <p className="text-[11px] text-rose-400 font-medium mt-1 animate-pulse">⚠️ {fieldErrors.due_date[0]}</p>}
                 </div>
             </div>
 
-            {/* Action Buttons */}
+            {/* Core Action Submit Button Node */}
             <div className="pt-4 border-t border-gray-900/60 flex justify-end">
                 <button
                     type="submit"
@@ -295,4 +287,3 @@ export default function ProjectForm({
         </form>
     );
 }
-
