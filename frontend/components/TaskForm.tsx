@@ -144,6 +144,10 @@ export default function TaskForm({
                     ⚠️ Validation Guard: {validationError || fieldErrors.due_date?.[0]}
                 </div>
             )}
+            {fieldErrors.title && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.title?.[0]}</p>}
+            {fieldErrors.user_id && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.user_id?.[0]}</p>}
+            {fieldErrors.description && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.description?.[0]}</p>}
+            {fieldErrors.start_date && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.start_date?.[0]}</p>}
 
             {/* Task Title Input */}
             <div className="space-y-1.5">
@@ -161,7 +165,6 @@ export default function TaskForm({
                         className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 pl-11 pr-4 py-3.5 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10"
                     />
                 </div>
-                {fieldErrors.title && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.title?.[0]}</p>}
             </div>
 
             {/* 👑 Privileged Assignee Selection Channel - Accessible for Admin/Managers only */}
@@ -186,7 +189,6 @@ export default function TaskForm({
                         </select>
                         <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-purple-500 text-xs">▼</div>
                     </div>
-                    {fieldErrors.user_id && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.user_id?.[0]}</p>}
                 </div>
             )}
 
@@ -203,7 +205,6 @@ export default function TaskForm({
                     placeholder="Break down execution details, prerequisites, or required criteria..."
                     className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 px-4 py-3.5 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 resize-none"
                 />
-                {fieldErrors.description && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.description?.[0]}</p>}
             </div>
 
             {/* Custom Interactive Status Grid Badge Row */}
@@ -250,7 +251,6 @@ export default function TaskForm({
                         onChange={(e) => setStartDate(e.target.value)}
                         className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 px-4 py-3.5 text-xs text-white outline-none transition focus:border-purple-500/50 uppercase font-mono cursor-pointer"
                     />
-                    {fieldErrors.start_date && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.start_date?.[0]}</p>}
                 </div>
                 <div className="space-y-1.5">
                     <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Task Expiration Deadline</label>

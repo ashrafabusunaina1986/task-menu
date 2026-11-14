@@ -5,6 +5,7 @@ import TasksClient from "./TasksClient";
 interface TasksPageProps {
     searchParams: Promise<{
         project_id?: string;
+        is_project_expired: boolean
     }>;
 }
 
@@ -35,6 +36,7 @@ export default async function TasksPage({
                 image: session.user?.image,
                 role: session.user.role
             }}
+            is_project_expired
         />
     );
 }

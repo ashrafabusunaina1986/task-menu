@@ -40,6 +40,12 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     console.error("Critical Server Exception: Project layout rendering failed:", error);
     notFound();
   }
+  const projectDueDate = project?.due_date ? new Date(project.due_date).getTime() : null
+
+  const now = Date.now()
+
+  // 🛡️ TEMPORAL LOCKOUT FLAG: Evaluates true if the global container timeline has officially expired
+  const isProjectExpired = projectDueDate !== null && projectDueDate < now
 
   const targetProjectId = project._id || "";
 
@@ -89,7 +95,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             */}
             {project.owner_id && project.owner_id.trim() !== "" && (
               <Link
-                href={`/tasks?project_id=${encodeURIComponent(targetProjectId)}`}
+                href={`/tasks?project_id=${encodeURIComponent(targetProjectId)}&is_project_expired=${encodeURIComponent(isProjectExpired)}`}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-purple-500/30 bg-purple-500/10 text-xs font-bold uppercase tracking-wider text-purple-400 hover:bg-purple-600 hover:text-white shadow-lg shadow-purple-600/10 active:scale-[0.98] transition-all duration-150 animate-fadeIn"
               >
                 📋 View Tasks

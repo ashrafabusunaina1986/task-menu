@@ -56,18 +56,26 @@ class TaskCreateService(TaskServiceBase):
         now = datetime.now(timezone.utc)
 
         # 🛡️ Secure Validation Gate: Ensure task completion deadline aligns with the parent project bounds
-        if task_data.due_date and project_due_date:
-            if task_data.due_date > project_due_date:
-                # Block future structural anomalies while safely handling historic containment logging
-                if task_data.due_date > now:
-                    raise HTTPException(
-                        status_code=status.HTTP_409_CONFLICT,
-                        detail="Operational Breach: Task deadline cannot extend beyond the global project delivery timeline.",
-                    )
+        task_due_date = task_data.due_date.replace(tzinfo=timezone.utc)
+        task_start_date = task_data.start_date.replace(tzinfo=timezone.utc)
+        if project_due_date < now:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Security Exception: Creation denied. This project workspace container has reached its final expiration deadline and is now permanently locked.",
+            )
+
+        # ✅ CRITICAL ARCHITECTURAL REPAIR: Stripped out the redundant and buggy 'now' conditional checkpoint.
+        # Tasks are now strictly and exclusively contained within their parent project timelines, regardless of whether the dates are historical or future.
+        if task_due_date and project_due_date:
+            if task_due_date > project_due_date:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Operational Breach: Task deadline cannot extend beyond the global project delivery timeline.",
+                )
 
         # 🛡️ Secure Validation Gate: Enforce strict initialization containment for the task start date
-        if task_data.start_date and project_start_date:
-            if task_data.start_date < project_start_date:
+        if task_start_date and project_start_date:
+            if task_start_date < project_start_date:
                 # ✅ FIXED: Validate structural integrity comprehensively rather than blocking active today packets
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,

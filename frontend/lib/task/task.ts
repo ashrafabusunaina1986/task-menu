@@ -2,6 +2,7 @@
 
 import { CreateTask, Task } from "@/types/task";
 import { clientFetch } from "../client_api";
+import { ApiResponseCheckName } from "@/types/project";
 
 // ===============================================
 // GET ALL TASKS
@@ -31,6 +32,17 @@ export function createTask(data: CreateTask, project_id: string) {
         body: JSON.stringify({ ...data, project_id }),
     });
 }
+
+// ========================================
+// CHECK TASK NAME
+// ========================================
+
+export function check_task_title(task_title: string): Promise<ApiResponseCheckName> {
+    return clientFetch<ApiResponseCheckName>(
+        `/tasks/check-title?task_title=${encodeURIComponent(task_title)}`
+    )
+}
+
 
 // ===============================================
 // UPDATE TASK

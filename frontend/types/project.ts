@@ -50,5 +50,9 @@ export interface ProjectUpdate extends Partial<ProjectCreate> {
     owner_role: string | null
 }
 
-
+export type ApiResponseCheckName =
+    |
+    { success: false; message: string }
+    |
+    { success: true; data: boolean }
 

@@ -20,6 +20,7 @@ type TasksClientProps = {
         role?: string | null;
     };
     project_id: string;
+    is_project_expired: boolean
     session: Session;
 };
 
@@ -33,7 +34,8 @@ const taskTabs: { label: string; value: TaskStatusTab }[] = [
     { label: "Completed", value: "done" },
 ];
 
-export default function TasksClient({ user, project_id, session }: TasksClientProps) {
+export default function TasksClient({ user, project_id, is_project_expired, session }: TasksClientProps) {
+
     const router = useRouter();
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
@@ -169,13 +171,49 @@ export default function TasksClient({ user, project_id, session }: TasksClientPr
                         </p>
                     </div>
 
-                    {!error && <button
-                        type="button"
-                        onClick={() => router.push(`/tasks/create?project_id=${encodeURIComponent(project_id)}`)}
-                        className="rounded-xl bg-purple-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-purple-600/20 transition hover:bg-purple-700 active:scale-[0.98]"
-                    >
-                        + Deploy Task
-                    </button>}
+                    {/* ========================================================================= */}
+                    {/* 🚀 ACTION HEADER CONTROL BAR PANEL                                        */}
+                    {/* ========================================================================= */}
+                    <div className="flex justify-between items-center border-b border-white/5 pb-4 mb-6">
+                        <div>
+                            <h2 className="text-xl font-bold tracking-tight text-white">Project Pipeline Tasks</h2>
+                            <p className="text-xs text-gray-500 mt-0.5">Orchestrate executive resources and task tracking shards.</p>
+                        </div>
+
+                        {/* ✅ FIXED LAYER: The button stays fully active even if 'error' is true (meaning no tasks found), 
+                            but dynamically locks down and triggers the neon badge if the project timeline expires. */}
+                        {!is_project_expired ? (
+                            <button
+                                type="button"
+                                onClick={() => router.push(`/tasks/create?project_id=${encodeURIComponent(project_id)}`)}
+                                className="rounded-xl bg-purple-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-purple-600/20 transition hover:bg-purple-700 active:scale-[0.98] cursor-pointer"
+                            >
+                                + Deploy Task
+                            </button>
+                        ) : (
+                            /* Premium Neon Warning Badge rendered securely if the baseline deadline expires */
+                            <div className="px-4 py-2 rounded-xl border border-rose-500/20 bg-rose-500/5 text-rose-400 font-mono text-[10px] font-bold uppercase tracking-widest animate-pulse">
+                                🔒 Workspace Locked (Deadline Expired)
+                            </div>
+                        )}
+                    </div>
+
+                    {/* ========================================================================= */}
+                    {/* 📁 TASKS CONTENT CONDITIONAL CONTAINER VIEW                               */}
+                    {/* ========================================================================= */}
+                    {error && (
+                        /* ✅ INJECTED: Premium Cyberpunk Empty-State Descriptive Card Node Info */
+                        <div className="rounded-2xl border border-white/5 bg-[#0d0d16]/40 backdrop-blur-xl p-8 text-center max-w-xl mx-auto space-y-3 animate-fadeIn mt-10">
+                            <div className="text-3xl text-purple-500/40">📂</div>
+                            <h3 className="text-sm font-bold tracking-wide text-zinc-300 uppercase">
+                                No Active Operational Tasks Located
+                            </h3>
+                            <p className="text-xs text-gray-500 leading-5 max-w-sm mx-auto">
+                                This workspace container slot is currently clear. No tasks have been mapped or provisioned to this project architecture registry yet. Use the deployment engine above to allocate work.
+                            </p>
+                        </div>
+                    )}
+
                 </div>
 
                 {/* Exception Error Handling Terminal Layout */}

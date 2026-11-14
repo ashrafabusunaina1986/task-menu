@@ -155,6 +155,13 @@ export default function ProjectForm({
                     ⚠️ Validation Error: {globalValidationError}
                 </div>
             )}
+            {fieldErrors.name && <p className="text-[11px] text-rose-400 font-medium mt-1 animate-pulse">⚠️ {fieldErrors.name[0]}</p>}
+            {fieldErrors.owner_id && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.owner_id[0]}</p>}
+            {fieldErrors.description && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.description[0]}</p>}
+            {fieldErrors.status && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.status[0]}</p>}
+            {fieldErrors.priority && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.priority[0]}</p>}
+            {fieldErrors.due_date && <p className="text-[11px] text-rose-400 font-medium mt-1 animate-pulse">⚠️ {fieldErrors.due_date[0]}</p>}
+            {fieldErrors.start_date && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.start_date[0]}</p>}
 
             {/* 1. Project Name Field Block */}
             <div className="space-y-1.5">
@@ -172,7 +179,6 @@ export default function ProjectForm({
                         className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 pl-11 pr-4 py-3.5 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10"
                     />
                 </div>
-                {fieldErrors.name && <p className="text-[11px] text-rose-400 font-medium mt-1 animate-pulse">⚠️ {fieldErrors.name[0]}</p>}
             </div>
 
             {/* 2. Privileged Owner Selection Dropdown Block */}
@@ -195,7 +201,6 @@ export default function ProjectForm({
                         </select>
                         <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-purple-500 text-xs">▼</div>
                     </div>
-                    {fieldErrors.owner_id && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.owner_id[0]}</p>}
                 </div>
             )}
 
@@ -212,7 +217,6 @@ export default function ProjectForm({
                     placeholder="Provide contextual goals, repositories, infrastructure requirements..."
                     className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 px-4 py-3.5 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 resize-none"
                 />
-                {fieldErrors.description && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.description[0]}</p>}
             </div>
 
             {/* 4. Pipeline Flow Status Interactive Card Block */}
@@ -230,7 +234,6 @@ export default function ProjectForm({
                         </button>
                     ))}
                 </div>
-                {fieldErrors.status && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.status[0]}</p>}
             </div>
 
             {/* 5. Risk Priority Matrix Interactive Block */}
@@ -248,7 +251,6 @@ export default function ProjectForm({
                         </button>
                     ))}
                 </div>
-                {fieldErrors.priority && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.priority[0]}</p>}
             </div>
 
             {/* 6. Chronological Scheduling Timestamps Grid Block */}
@@ -261,7 +263,6 @@ export default function ProjectForm({
                         onChange={(e) => setStartDate(e.target.value)}
                         className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 px-4 py-3.5 text-xs text-white outline-none transition focus:border-purple-500/50 uppercase font-mono cursor-pointer"
                     />
-                    {fieldErrors.start_date && <p className="text-[11px] text-rose-400 font-medium mt-1">⚠️ {fieldErrors.start_date[0]}</p>}
                 </div>
                 <div className="space-y-1.5">
                     <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Target Delivery Deadline</label>
@@ -271,7 +272,6 @@ export default function ProjectForm({
                         onChange={(e) => setDueDate(e.target.value)}
                         className="w-full rounded-xl border border-gray-800/80 bg-[#141423]/60 px-4 py-3.5 text-xs text-white outline-none transition focus:border-purple-500/50 uppercase font-mono cursor-pointer"
                     />
-                    {fieldErrors.due_date && <p className="text-[11px] text-rose-400 font-medium mt-1 animate-pulse">⚠️ {fieldErrors.due_date[0]}</p>}
                 </div>
             </div>
 

@@ -4,7 +4,6 @@
 "use client";
 
 import ProjectForm from "@/components/project/ProjectForm";
-import TopNavigation from "@/components/navigation/TopNavigation";
 import { ProjectCreate } from "@/types/project";
 import { createProject } from "@/lib/project/project"; // استدعاء دالة الـ Client API الصافية المتوافقة تماماً
 import { useRouter } from "next/navigation";
@@ -52,9 +51,7 @@ export default function CreateProject({ currentUser }: CreateProjectProps) {
             </div>
 
 
-            <div className="relative z-50 w-full max-w-4xl mb-4">
-                <TopNavigation isAuthenticated={true} role={currentUser.role} />
-            </div>
+
 
 
             <section className="relative z-10 w-full max-w-4xl animate-fadeIn space-y-4">

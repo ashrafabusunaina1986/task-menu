@@ -1,6 +1,6 @@
 // lib/project/project.ts
 
-import { Project, ProjectCreate, ProjectRead, ProjectUpdate } from "@/types/project";
+import { ApiResponseCheckName, Project, ProjectCreate, ProjectRead, ProjectUpdate } from "@/types/project";
 import { clientFetch } from "../client_api";
 
 // ============================================
@@ -52,6 +52,16 @@ export function createProject(data: ProjectCreate & { owner_id: string | null, o
         method: "POST",
         body: JSON.stringify(data)
     })
+}
+
+// ========================================
+// CHECK PROJECT NAME
+// ========================================
+
+export function check_project_name(project_name: string): Promise<ApiResponseCheckName> {
+    return clientFetch<ApiResponseCheckName>(
+        `/project/check-name?project_name=${encodeURIComponent(project_name)}`
+    )
 }
 
 // ========================================
