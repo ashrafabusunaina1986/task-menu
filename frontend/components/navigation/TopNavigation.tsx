@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -19,9 +20,10 @@ export default function TopNavigation({
         setMenuOpen(false);
     }
 
-    // دالة ديناميكية لتحديد شارة اللون لدور المستخدم بشكل إحصائي بارز
+    // Dynamically determine the user's role badge color.
     const getRoleBadgeClass = (userRole: string | null | undefined) => {
         if (!userRole) return "hidden";
+
         switch (userRole.toLowerCase()) {
             case "admin":
                 return "bg-rose-500/10 text-rose-400 border-rose-500/20";
@@ -67,12 +69,14 @@ export default function TopNavigation({
         hover:bg-purple-700
         active:scale-[0.98]
     `;
+
     return (
         <nav className="relative z-50 mx-auto w-[94%] max-w-7xl pt-4 sm:pt-6">
             <div className="rounded-2xl border border-white/5 bg-[#0d0d16]/90 px-4 py-3 shadow-[0_20px_50px_rgba(0,0,0,0.75)] backdrop-blur-xl sm:px-6 sm:py-3.5 flex flex-col justify-center">
 
                 {/* Top Desktop Row Panel */}
                 <div className="flex items-center justify-between">
+
                     {/* Brand Interactive Logo */}
                     <div className="flex items-center gap-3">
                         <Link
@@ -83,7 +87,6 @@ export default function TopNavigation({
                             Workora
                         </Link>
 
-                        {/* الإحصائية البصرية لدور المالك حياً داخل الهيدر */}
                         {isAuthenticated && role && (
                             <span className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded border uppercase tracking-wider select-none ${getRoleBadgeClass(role)}`}>
                                 {role} Node
@@ -92,17 +95,23 @@ export default function TopNavigation({
                     </div>
 
 
-
-                    {/* Desktop Dynamic Navigation Links Core */}
+                    {/* Desktop Navigation */}
                     <div className="hidden items-center gap-1.5 md:flex">
+
                         <Link href="/" className={linkClass}>
                             Home
                         </Link>
 
                         {isAuthenticated && (
-                            <Link href="/project" className={linkClass}>
-                                Projects
-                            </Link>
+                            <>
+                                <Link href="/project" className={linkClass}>
+                                    Projects
+                                </Link>
+
+                                <Link href="/teams" className={linkClass}>
+                                    Teams
+                                </Link>
+                            </>
                         )}
 
                         {role === "admin" && (
@@ -130,7 +139,7 @@ export default function TopNavigation({
                     </div>
 
 
-                    {/* Mobile Menu Action Toggle Trigger Button */}
+                    {/* Mobile Menu Toggle */}
                     <button
                         type="button"
                         onClick={() => setMenuOpen((open) => !open)}
@@ -142,32 +151,64 @@ export default function TopNavigation({
                     </button>
                 </div>
 
-                {/* Mobile Responsive Navigation Drawer Layer */}
+
+                {/* Mobile Navigation */}
                 {menuOpen && (
                     <div className="mt-3 flex flex-col gap-1 border-t border-gray-900/60 pt-3 md:hidden animate-fadeIn">
-                        <Link href="/" onClick={closeMenu} className={mobileLinkClass}>
+
+                        <Link
+                            href="/"
+                            onClick={closeMenu}
+                            className={mobileLinkClass}
+                        >
                             Home
                         </Link>
 
                         {isAuthenticated && (
-                            <Link href="/project" onClick={closeMenu} className={mobileLinkClass}>
-                                Projects
-                            </Link>
+                            <>
+                                <Link
+                                    href="/project"
+                                    onClick={closeMenu}
+                                    className={mobileLinkClass}
+                                >
+                                    Projects
+                                </Link>
+
+                                <Link
+                                    href="/teams"
+                                    onClick={closeMenu}
+                                    className={mobileLinkClass}
+                                >
+                                    Teams
+                                </Link>
+                            </>
                         )}
 
                         {role === "admin" && (
-                            <Link href="/users" onClick={closeMenu} className={mobileLinkClass}>
+                            <Link
+                                href="/users"
+                                onClick={closeMenu}
+                                className={mobileLinkClass}
+                            >
                                 Users
                             </Link>
                         )}
 
                         {isAuthenticated && (
-                            <Link href="/settings" onClick={closeMenu} className={mobileLinkClass}>
+                            <Link
+                                href="/settings"
+                                onClick={closeMenu}
+                                className={mobileLinkClass}
+                            >
                                 Settings
                             </Link>
                         )}
 
-                        <Link href="/about" onClick={closeMenu} className={mobileLinkClass}>
+                        <Link
+                            href="/about"
+                            onClick={closeMenu}
+                            className={mobileLinkClass}
+                        >
                             About Us
                         </Link>
 

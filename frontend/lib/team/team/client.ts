@@ -1,5 +1,5 @@
 
-// lib/team/team.ts
+// lib/team/team/client.ts
 
 import {
     Team,
@@ -9,7 +9,7 @@ import {
     TeamUpdate,
 } from "@/types/team/team";
 
-import { clientFetch } from "../client_api";
+import { clientFetch } from "../../client_api";
 
 // ============================================
 // GET ALL TEAMS
